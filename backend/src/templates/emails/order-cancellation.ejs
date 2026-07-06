@@ -1,0 +1,14 @@
+<%- include('partials/header', { storeName, title: 'Order Cancelled' }) %>
+
+<h2 style="margin:0 0 8px;font-size:18px;">Order cancelled</h2>
+<p style="margin:0 0 16px;line-height:1.6;">
+  Your order <strong><%= order.orderNumber %></strong> has been cancelled.
+</p>
+
+<% if (orderUrl) { %>
+  <p style="margin:0;">
+    <a href="<%= orderUrl %>" style="color:#18181b;font-weight:600;">View order details</a>
+  </p>
+<% } %>
+
+<%- include('partials/footer', { storeName }) %>

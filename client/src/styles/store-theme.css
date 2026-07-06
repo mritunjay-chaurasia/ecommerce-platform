@@ -1,0 +1,86 @@
+:root {
+    --store-page-bg: #f1f3f6;
+    --store-surface: #ffffff;
+    --store-surface-muted: #fafafa;
+    --store-surface-subtle: #f8f8f8;
+    --store-text-primary: #212121;
+    --store-text-secondary: #616161;
+    --store-text-muted: #878787;
+    --store-border: #e0e0e0;
+    --store-brand: #2874f0;
+    --store-brand-dark: #1c5dc9;
+    --store-brand-deep: #0f4db8;
+    --store-accent: #ffe500;
+    --store-accent-hover: #f5d900;
+    --store-success: #388e3c;
+    --store-link: #2874f0;
+    --store-link-hover: #1c5dc9;
+    --store-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    --store-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --store-radius: 4px;
+    --store-radius-pill: 999px;
+    --store-transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+    --store-hero-gradient: linear-gradient(135deg, #2874f0 0%, #1c5dc9 60%, #0f4db8 100%);
+    --store-hero-overlay: linear-gradient(rgba(15, 77, 184, 0.72), rgba(40, 116, 240, 0.72));
+    --store-promo-gradient: linear-gradient(135deg, #2874f0 0%, #1c5dc9 100%);
+    --store-promo-overlay: linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55));
+    --store-nav-category-bg: #ffffff;
+    --store-nav-category-border: #e0e0e0;
+    --store-nav-category-text: #212121;
+    --store-nav-category-hover: #2874f0;
+}
+
+.dark {
+    --store-page-bg: #0f172a;
+    --store-surface: #1e293b;
+    --store-surface-muted: #0f172a;
+    --store-surface-subtle: #0f172a;
+    --store-text-primary: #f1f5f9;
+    --store-text-secondary: #cbd5e1;
+    --store-text-muted: #94a3b8;
+    --store-border: #334155;
+    --store-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    --store-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.45);
+    --store-hero-gradient: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #172554 100%);
+    --store-hero-overlay: linear-gradient(rgba(2, 6, 23, 0.78), rgba(15, 23, 42, 0.82));
+    --store-promo-gradient: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    --store-promo-overlay: linear-gradient(rgba(2, 6, 23, 0.72), rgba(15, 23, 42, 0.78));
+    --store-nav-category-bg: #1e293b;
+    --store-nav-category-border: #334155;
+    --store-nav-category-text: #e2e8f0;
+    --store-nav-category-hover: #93c5fd;
+}
+
+@keyframes storeFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes storeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.store-animate-in {
+    animation: storeSlideUp 0.35s ease both;
+}
+
+.store-empty-state {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--store-text-muted);
+    transition: var(--store-transition);
+}

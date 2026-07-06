@@ -1,0 +1,20 @@
+.store-virtualized-grid {
+    width: 100%;
+    height: min(72vh, 960px);
+    min-height: 420px;
+}
+
+.store-virtualized-grid-cell {
+    box-sizing: border-box;
+    padding: 0 0.5rem 1rem 0;
+}
+
+.store-virtualized-grid-cell .product-card {
+    height: 100%;
+}
+
+@media (min-width: 640px) {
+    .store-virtualized-grid-cell {
+        padding: 0 0.5rem 1rem 0;
+    }
+}

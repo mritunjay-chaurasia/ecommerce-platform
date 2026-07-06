@@ -1,0 +1,40 @@
+.wishlist-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--store-border);
+    border-radius: var(--store-radius-pill);
+    background: var(--store-surface);
+    color: var(--store-text-muted);
+    cursor: pointer;
+    transition: var(--store-transition), transform 0.15s ease;
+}
+
+.wishlist-button:hover {
+    border-color: #e53935;
+    color: #e53935;
+    transform: scale(1.05);
+}
+
+.wishlist-button.active {
+    border-color: #e53935;
+    background: rgba(229, 57, 53, 0.12);
+    color: #e53935;
+}
+
+.wishlist-button.active svg {
+    fill: currentColor;
+}
+
+.product-card-image-wrap .wishlist-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+}
+
+.product-detail-title-row .wishlist-button {
+    flex-shrink: 0;
+}

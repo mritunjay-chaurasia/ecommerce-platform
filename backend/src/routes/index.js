@@ -1,0 +1,40 @@
+const express = require('express');
+const router = express.Router();
+const { adminLimiter } = require('../middlewares/rateLimiters');
+
+const authRouter = require('./auth.router');
+const adminRouter = require('./admin.router');
+const categoryRouter = require('./category.router');
+const bannerRouter = require('./banner.router');
+const couponRouter = require('./coupon.router');
+const orderRouter = require('./order.router');
+const productRouter = require('./product.router');
+const uploadRouter = require('./upload.router');
+const reviewRouter = require('./review.router');
+const settingsRouter = require('./settings.router');
+const storeRouter = require('./store.router');
+const addressRouter = require('./address.router');
+const cartRouter = require('./cart.router');
+const wishlistRouter = require('./wishlist.router');
+const returnRouter = require('./return.router');
+const adminReturnRouter = require('./admin.return.router');
+
+router.use('/auth', authRouter);
+router.use('/', storeRouter);
+router.use('/', addressRouter);
+router.use('/', cartRouter);
+router.use('/', wishlistRouter);
+router.use('/', returnRouter);
+router.use('/admin', adminLimiter);
+router.use('/admin', adminRouter);
+router.use('/admin', categoryRouter);
+router.use('/admin', bannerRouter);
+router.use('/admin', couponRouter);
+router.use('/admin', orderRouter);
+router.use('/admin', productRouter);
+router.use('/admin', uploadRouter);
+router.use('/admin', settingsRouter);
+router.use('/admin', reviewRouter);
+router.use('/admin', adminReturnRouter);
+
+module.exports = router;

@@ -1,0 +1,53 @@
+[
+  {
+    "section": "Main"
+  },
+  {
+    "id": "dashboard",
+    "label": "Dashboard",
+    "path": "/dashboard",
+    "icon": "LayoutDashboard"
+  },
+  {
+    "id": "home",
+    "label": "Store",
+    "path": "/",
+    "icon": "Home"
+  },
+  {
+    "section": "Shopping"
+  },
+  {
+    "id": "orders",
+    "label": "Orders",
+    "path": "/orders",
+    "icon": "Package"
+  },
+  {
+    "id": "wishlist",
+    "label": "Wishlist",
+    "path": "/wishlist",
+    "icon": "Heart"
+  },
+  {
+    "id": "cart",
+    "label": "Cart",
+    "path": "/cart",
+    "icon": "ShoppingCart"
+  },
+  {
+    "section": "Account"
+  },
+  {
+    "id": "profile",
+    "label": "Profile",
+    "path": "/profile",
+    "icon": "User"
+  },
+  {
+    "id": "logout",
+    "label": "Logout",
+    "icon": "LogOut",
+    "action": "logout"
+  }
+]

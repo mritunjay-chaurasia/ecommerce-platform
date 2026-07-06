@@ -1,0 +1,28 @@
+.loader {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.loader-center {
+    width: 100%;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.loader-label {
+    text-align: center;
+}
+
+.page-loader {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+}
+
+.dark .page-loader {
+    background: #020617;
+}

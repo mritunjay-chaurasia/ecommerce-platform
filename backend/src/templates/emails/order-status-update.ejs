@@ -1,0 +1,20 @@
+<%- include('partials/header', { storeName, title: 'Order Update' }) %>
+
+<h2 style="margin:0 0 8px;font-size:18px;">Your order was updated</h2>
+<p style="margin:0 0 16px;line-height:1.6;">
+  Order <strong><%= order.orderNumber %></strong>: <%- statusMessage %>
+</p>
+
+<% if (order.trackingNumber) { %>
+  <p style="margin:0 0 16px;line-height:1.6;">
+    Tracking number: <strong><%= order.trackingNumber %></strong>
+  </p>
+<% } %>
+
+<% if (orderUrl) { %>
+  <p style="margin:0;">
+    <a href="<%= orderUrl %>" style="color:#18181b;font-weight:600;">View order details</a>
+  </p>
+<% } %>
+
+<%- include('partials/footer', { storeName }) %>

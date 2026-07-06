@@ -1,0 +1,95 @@
+[
+  {
+    "section": "Main"
+  },
+  {
+    "id": "dashboard",
+    "label": "Dashboard",
+    "path": "/dashboard",
+    "icon": "LayoutDashboard"
+  },
+  {
+    "id": "home",
+    "label": "Store",
+    "path": "/",
+    "icon": "Home"
+  },
+  {
+    "section": "Administration"
+  },
+  {
+    "id": "admin-users",
+    "label": "Users",
+    "path": "/admin/users",
+    "icon": "Users"
+  },
+  {
+    "id": "admin-categories",
+    "label": "Categories",
+    "path": "/admin/categories",
+    "icon": "Grid"
+  },
+  {
+    "id": "admin-coupons",
+    "label": "Coupons",
+    "path": "/admin/coupons",
+    "icon": "Tag"
+  },
+  {
+    "id": "admin-banners",
+    "label": "Banners",
+    "path": "/admin/banners",
+    "icon": "Image"
+  },
+  {
+    "id": "admin-products",
+    "label": "Products",
+    "path": "/admin/products",
+    "icon": "Package"
+  },
+  {
+    "id": "admin-inventory",
+    "label": "Inventory",
+    "path": "/admin/inventory",
+    "icon": "AlertTriangle"
+  },
+  {
+    "id": "admin-orders",
+    "label": "Orders",
+    "path": "/admin/orders",
+    "icon": "ShoppingCart"
+  },
+  {
+    "id": "admin-returns",
+    "label": "Returns",
+    "path": "/admin/returns",
+    "icon": "Package"
+  },
+  {
+    "id": "admin-settings",
+    "label": "Settings",
+    "path": "/admin/settings",
+    "icon": "Settings"
+  },
+  {
+    "id": "admin-reviews",
+    "label": "Reviews",
+    "path": "/admin/reviews",
+    "icon": "MessageSquare"
+  },
+  {
+    "section": "Account"
+  },
+  {
+    "id": "profile",
+    "label": "Profile",
+    "path": "/profile",
+    "icon": "User"
+  },
+  {
+    "id": "logout",
+    "label": "Logout",
+    "icon": "LogOut",
+    "action": "logout"
+  }
+]

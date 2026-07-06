@@ -1,0 +1,44 @@
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.theme-toggle:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.theme-toggle-label {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .theme-toggle-label {
+        display: inline;
+    }
+}
+
+.dark .theme-toggle {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+.dark .theme-toggle:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+.theme-toggle-compact .theme-toggle-label {
+    display: none;
+}

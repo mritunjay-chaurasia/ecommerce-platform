@@ -1,0 +1,188 @@
+[
+  {
+    "path": "/",
+    "name": "Home",
+    "component": "Home",
+    "title": "Home"
+  },
+  {
+    "path": "/products/:productId",
+    "name": "ProductDetail",
+    "component": "ProductDetail",
+    "title": "Product Details"
+  },
+  {
+    "path": "/login",
+    "name": "Login",
+    "component": "Login",
+    "title": "Login",
+    "guestOnly": true
+  },
+  {
+    "path": "/signup",
+    "name": "Signup",
+    "component": "Signup",
+    "title": "Sign Up",
+    "guestOnly": true
+  },
+  {
+    "path": "/forgot-password",
+    "name": "ForgotPassword",
+    "component": "ForgotPassword",
+    "title": "Forgot Password",
+    "guestOnly": true
+  },
+  {
+    "path": "/reset-password",
+    "name": "ResetPassword",
+    "component": "ResetPassword",
+    "title": "Reset Password",
+    "guestOnly": true
+  },
+  {
+    "path": "/auth/callback",
+    "name": "OAuthCallback",
+    "component": "OAuthCallback",
+    "title": "Signing In"
+  },
+  {
+    "path": "/profile",
+    "name": "Profile",
+    "component": "Profile",
+    "title": "My Profile",
+    "protected": true,
+    "roles": ["customer", "admin"]
+  },
+  {
+    "path": "/dashboard",
+    "name": "Dashboard",
+    "component": "Dashboard",
+    "title": "Dashboard",
+    "protected": true,
+    "roles": ["customer", "admin"]
+  },
+  {
+    "path": "/orders",
+    "name": "Orders",
+    "component": "Orders",
+    "title": "My Orders",
+    "protected": true,
+    "roles": ["customer"]
+  },
+  {
+    "path": "/cart",
+    "name": "Cart",
+    "component": "Cart",
+    "title": "Cart"
+  },
+  {
+    "path": "/orders/:orderId",
+    "name": "OrderDetail",
+    "component": "OrderDetail",
+    "title": "Order Details",
+    "protected": true,
+    "roles": ["customer"]
+  },
+  {
+    "path": "/wishlist",
+    "name": "Wishlist",
+    "component": "Wishlist",
+    "title": "My Wishlist",
+    "protected": true,
+    "roles": ["customer"]
+  },
+  {
+    "path": "/admin/dashboard",
+    "name": "AdminDashboardRedirect",
+    "component": "AdminDashboardRedirect",
+    "title": "Dashboard",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/users",
+    "name": "AdminUsers",
+    "component": "AdminUsers",
+    "title": "Manage Users",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/categories",
+    "name": "AdminCategories",
+    "component": "AdminCategories",
+    "title": "Manage Categories",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/coupons",
+    "name": "AdminCoupons",
+    "component": "AdminCoupons",
+    "title": "Manage Coupons",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/banners",
+    "name": "AdminBanners",
+    "component": "AdminBanners",
+    "title": "Manage Banners",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/products",
+    "name": "AdminProducts",
+    "component": "AdminProducts",
+    "title": "Manage Products",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/inventory",
+    "name": "AdminInventory",
+    "component": "AdminInventory",
+    "title": "Inventory Management",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/orders",
+    "name": "AdminOrders",
+    "component": "AdminOrders",
+    "title": "Manage Orders",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/settings",
+    "name": "AdminSettings",
+    "component": "AdminSettings",
+    "title": "Store Settings",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/reviews",
+    "name": "AdminReviews",
+    "component": "AdminReviews",
+    "title": "Manage Reviews",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/returns",
+    "name": "AdminReturns",
+    "component": "AdminReturns",
+    "title": "Return Requests",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "*",
+    "name": "NotFound",
+    "component": "NotFound",
+    "title": "Page Not Found"
+  }
+]

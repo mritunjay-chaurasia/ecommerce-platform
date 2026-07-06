@@ -1,0 +1,26 @@
+<%- include('partials/header', { storeName, title: 'Order Confirmation' }) %>
+
+<h2 style="margin:0 0 8px;font-size:18px;">Thank you for your order!</h2>
+<p style="margin:0 0 16px;line-height:1.6;">
+  Hi <%= customerName %>, we've received your order <strong><%= order.orderNumber %></strong>.
+</p>
+
+<%- include('partials/order-items', { items: order.items, currency, formatMoney }) %>
+<%- include('partials/order-summary', { order, currency, formatMoney }) %>
+
+<p style="margin:16px 0 8px;font-weight:600;">Shipping to</p>
+<p style="margin:0 0 16px;line-height:1.6;color:#52525b;">
+  <%- include('partials/address-block', { address: order.shippingAddress }) %>
+</p>
+
+<p style="margin:0 0 16px;line-height:1.6;">
+  Payment method: <strong><%= formatStatusLabel(order.paymentMethod) %></strong>
+</p>
+
+<% if (orderUrl) { %>
+  <p style="margin:0;">
+    <a href="<%= orderUrl %>" style="color:#18181b;font-weight:600;">View your order</a>
+  </p>
+<% } %>
+
+<%- include('partials/footer', { storeName }) %>

@@ -1,0 +1,12 @@
+<% if (address) { %>
+  <% [
+    address.fullName,
+    address.line1,
+    address.line2,
+    [address.city, address.state, address.postalCode].filter(Boolean).join(', '),
+    address.country,
+    address.phone,
+  ].filter(Boolean).forEach(function(line) { %>
+    <%= line %><br>
+  <% }); %>
+<% } %>

@@ -1,0 +1,38 @@
+<%- include('../emails/partials/header', { storeName, title: 'Invoice' }) %>
+
+<p style="margin:0 0 8px;color:#71717a;font-size:14px;">Invoice for order <strong><%= order.orderNumber %></strong></p>
+<p style="margin:0 0 24px;color:#71717a;font-size:14px;">Issued on <%= issuedAt %></p>
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:24px;">
+  <tr>
+    <td style="vertical-align:top;width:50%;">
+      <p style="margin:0 0 8px;font-weight:600;">Bill to</p>
+      <p style="margin:0;line-height:1.6;color:#52525b;">
+        <%= order.customer?.name || order.customerName %><br>
+        <%= order.customer?.email || order.customerEmail %><br>
+        <% if (order.customer?.phone || order.customerPhone) { %><%= order.customer?.phone || order.customerPhone %><br><% } %>
+      </p>
+    </td>
+    <td style="vertical-align:top;width:50%;">
+      <p style="margin:0 0 8px;font-weight:600;">Ship to</p>
+      <p style="margin:0;line-height:1.6;color:#52525b;">
+        <%- include('../emails/partials/address-block', { address: order.shippingAddress }) %>
+      </p>
+    </td>
+  </tr>
+</table>
+
+<%- include('../emails/partials/order-items', { items: order.items, currency, formatMoney }) %>
+<%- include('../emails/partials/order-summary', { order, currency, formatMoney }) %>
+
+<p style="margin:24px 0 8px;line-height:1.6;">
+  Payment method: <strong><%= formatStatusLabel(order.paymentMethod) %></strong>
+</p>
+<p style="margin:0 0 8px;line-height:1.6;">
+  Order status: <strong><%= formatStatusLabel(order.orderStatus) %></strong>
+</p>
+<p style="margin:0;line-height:1.6;">
+  Payment status: <strong><%= formatStatusLabel(order.paymentStatus) %></strong>
+</p>
+
+<%- include('../emails/partials/footer', { storeName }) %>
