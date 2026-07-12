@@ -77,10 +77,39 @@ const buildOrderCancellationEmail = async ({ storeName, order, orderUrl }) => ({
     }),
 });
 
+const buildEmailVerificationEmail = async ({ storeName, customerName, verifyUrl, expiryHours }) => ({
+    subject: `Verify your ${storeName} account`,
+    html: await renderEmailTemplate('email-verification', {
+        storeName,
+        customerName,
+        verifyUrl,
+        expiryHours,
+    }),
+});
+
+const buildReturnStatusUpdateEmail = async ({
+    storeName,
+    orderNumber,
+    statusLabel,
+    adminNotes,
+    supportEmail,
+}) => ({
+    subject: `Return update — ${orderNumber}`,
+    html: await renderEmailTemplate('return-status-update', {
+        storeName,
+        orderNumber,
+        statusLabel,
+        adminNotes,
+        supportEmail,
+    }),
+});
+
 module.exports = {
     renderEmailTemplate,
     buildPasswordResetEmail,
     buildOrderConfirmationEmail,
     buildOrderStatusUpdateEmail,
     buildOrderCancellationEmail,
+    buildEmailVerificationEmail,
+    buildReturnStatusUpdateEmail,
 };

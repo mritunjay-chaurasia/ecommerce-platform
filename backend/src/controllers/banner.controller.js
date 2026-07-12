@@ -2,6 +2,7 @@ const { Banner } = require('../models/banner.model');
 const ApiError = require('../utils/ApiError');
 const escapeRegex = require('../utils/escapeRegex');
 const { getBannerStatus } = require('../../../shared/utils/temporalStatus');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
 
 const normalizeBannerPayload = (payload = {}) => ({
     ...payload,
@@ -60,8 +61,7 @@ const buildActiveBannerFilter = (placement, now = new Date()) => ({
 });
 
 const getBanners = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const { page, limit } = parsePaginationQuery(req.query);
     const search = req.query.search?.trim();
     const statusFilter = req.query.status?.trim();
     const placementFilter = req.query.placement?.trim();
@@ -92,20 +92,15 @@ const getBanners = async (req, res) => {
         : formattedBanners;
 
     const total = filteredBanners.length;
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-    const safePage = Math.min(page, totalPages);
+    const paginationMeta = buildPagination(page, limit, total);
+    const safePage = Math.min(paginationMeta.page, paginationMeta.totalPages);
     const startIndex = (safePage - 1) * limit;
     const paginatedBanners = filteredBanners.slice(startIndex, startIndex + limit);
 
     return res.status(200).json({
         success: true,
         data: paginatedBanners,
-        pagination: {
-            page: safePage,
-            limit,
-            total,
-            totalPages,
-        },
+        pagination: buildPagination(safePage, limit, total),
     });
 };
 

@@ -127,7 +127,7 @@ const ImageUpload = ({
                                 <img
                                     src={previewSource}
                                     alt={`${label} preview ${index + 1}`}
-                                    className="h-40 w-full object-cover"
+                                    className="w-full aspect-[3/2] object-cover"
                                 />
                                 <div className="flex items-center justify-between gap-2 border-t border-slate-200 px-3 py-2">
                                     <span className="truncate text-xs text-slate-500">{labelText}</span>

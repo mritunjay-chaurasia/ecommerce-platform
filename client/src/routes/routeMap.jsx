@@ -9,9 +9,14 @@ import Orders from '../pages/Orders';
 import OrderDetail from '../pages/OrderDetail';
 import Wishlist from '../pages/Wishlist';
 import Cart from '../pages/Cart';
+import Checkout from '../pages/Checkout';
+import Returns from '../pages/Returns';
+import VerifyEmail from '../pages/VerifyEmail';
+import StaticPage from '../pages/StaticPage';
 import Dashboard from '../pages/dashboard/Dashboard';
 import AdminDashboardRedirect from '../pages/dashboard/AdminDashboardRedirect';
 import AdminUsers from '../pages/admin/AdminUsers';
+import AdminUserDetail from '../pages/admin/AdminUserDetail';
 import AdminCategories from '../pages/admin/AdminCategories';
 import AdminCoupons from '../pages/admin/AdminCoupons';
 import AdminBanners from '../pages/admin/AdminBanners';
@@ -37,9 +42,14 @@ const routeComponents = {
     OrderDetail,
     Wishlist,
     Cart,
+    Checkout,
+    Returns,
+    VerifyEmail,
+    StaticPage,
     Dashboard,
     AdminDashboardRedirect,
     AdminUsers,
+    AdminUserDetail,
     AdminCategories,
     AdminCoupons,
     AdminBanners,

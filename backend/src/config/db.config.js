@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('../models/auth.model');
+const seedDefaultCategories = require('./seedCategories');
+const seedDefaultProducts = require('./seedProducts');
 
 const migrateGoogleIdIndex = async () => {
     await User.updateMany(
@@ -18,9 +20,19 @@ const migrateGoogleIdIndex = async () => {
     await User.syncIndexes();
 };
 
-const connectDB = async () => {
+const connectDB = async (options = {}) => {
+    const { skipSeed = false } = options;
     const conn = await mongoose.connect(process.env.MONGO_URI);
     await migrateGoogleIdIndex();
+
+    if (!skipSeed && process.env.NODE_ENV !== 'test' && process.env.SEED_CATEGORIES !== 'false') {
+        await seedDefaultCategories();
+
+        if (process.env.SEED_PRODUCTS !== 'false') {
+            await seedDefaultProducts();
+        }
+    }
+
     console.log(`MongoDB connected: ${conn.connection.host}`);
 };
 

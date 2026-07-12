@@ -25,6 +25,7 @@ import { addToCart } from '../store/slices/cartSlice';
 import formatCurrency from '../utils/formatCurrency';
 import { getImageUrl } from '../utils/imageUrl';
 import { RATING_OPTIONS } from '../constants/index';
+import { trackRecentlyViewedProduct } from '../utils/recentlyViewed';
 import './ProductDetail.css';
 
 const emptyReviewForm = {
@@ -128,6 +129,12 @@ const ProductDetail = () => {
         fetchMyReview();
         fetchRelatedProducts();
     }, [fetchMyReview, fetchProduct, fetchRelatedProducts, fetchReviews]);
+
+    useEffect(() => {
+        if (product?.id) {
+            trackRecentlyViewedProduct(product.id);
+        }
+    }, [product?.id]);
 
     const images = useMemo(() => {
         if (!product) {

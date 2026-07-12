@@ -86,6 +86,9 @@ const cartSlice = createSlice({
         clearCart: (state) => {
             state.items = [];
         },
+        setCartItems: (state, action) => {
+            state.items = Array.isArray(action.payload) ? action.payload : [];
+        },
         syncCartProducts: (state, action) => {
             const products = action.payload || [];
 
@@ -118,6 +121,7 @@ export const {
     updateCartQuantity,
     removeFromCart,
     clearCart,
+    setCartItems,
     syncCartProducts,
 } = cartSlice.actions;
 

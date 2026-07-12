@@ -5,6 +5,7 @@ const { formatAdminOrder } = require('../utils/formatters/order');
 const { notifyOrderStatusUpdate } = require('../templates/orderEmails');
 const { getStoreSettings } = require('../utils/storeSettings');
 const { renderInvoiceHtml } = require('../utils/renderInvoice');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
 
 const buildOrderFilter = ({ search, orderStatus, paymentStatus }) => {
     const filter = {};
@@ -31,10 +32,8 @@ const buildOrderFilter = ({ search, orderStatus, paymentStatus }) => {
 };
 
 const getOrders = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const filter = buildOrderFilter(req.query);
-    const skip = (page - 1) * limit;
 
     const [orders, total] = await Promise.all([
         Order.find(filter)
@@ -48,12 +47,7 @@ const getOrders = async (req, res) => {
     return res.status(200).json({
         success: true,
         data: orders.map(formatAdminOrder),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        pagination: buildPagination(page, limit, total),
     });
 };
 

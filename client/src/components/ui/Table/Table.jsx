@@ -1,15 +1,30 @@
 import { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { AutoSizer, Table as VirtualizedTable, Column } from 'react-virtualized';
 import { Loader } from '../Loader/Loader';
 import Pagination from './Pagination';
-import 'react-virtualized/styles.css';
 import './Table.css';
 
-const DEFAULT_ROW_HEIGHT = 52;
-const HEADER_HEIGHT = 48;
-const MIN_VIRTUALIZED_ROWS = 20;
+const DEFAULT_TABLE_PAGINATION = {
+    page: 1,
+    totalPages: 1,
+    totalItems: 0,
+    pageSize: 10,
+};
+
+const SERIAL_COLUMN_KEYS = new Set(['serialNumber', 'serial', '__serialNumber']);
+
+const getCellSx = (column) => ({
+    width: column.width,
+    minWidth: column.minWidth,
+    maxWidth: column.maxWidth,
+});
 
 const DataTable = ({
     columns = [],
@@ -19,27 +34,39 @@ const DataTable = ({
     emptyMessage = 'No data found',
     rowKey = 'id',
     className = '',
-    rowHeight = DEFAULT_ROW_HEIGHT,
-    maxHeight = 560,
+    stickyHeader = false,
+    showSerialNumber = true,
+    serialNumberLabel = 'S.N.',
 }) => {
     const getRowKey = (row, index) => row[rowKey] || index;
-    const shouldVirtualize = !loading && data.length >= MIN_VIRTUALIZED_ROWS;
 
     const resolvedColumns = useMemo(() => {
-        const fixedWidth = columns.reduce((sum, column) => sum + (column.width || 0), 0);
-        const flexColumns = columns.filter((column) => !column.width).length || 1;
-        const defaultWidth = Math.max(150, Math.floor((960 - fixedWidth) / flexColumns));
+        const filteredColumns = columns.filter((column) => !SERIAL_COLUMN_KEYS.has(column.key));
 
-        return columns.map((column) => ({
-            ...column,
-            resolvedWidth: column.width || defaultWidth,
-        }));
-    }, [columns]);
+        if (!showSerialNumber) {
+            return filteredColumns;
+        }
 
-    const tableHeight = useMemo(() => {
-        const contentHeight = HEADER_HEIGHT + (data.length * rowHeight);
-        return Math.min(contentHeight, maxHeight);
-    }, [data.length, maxHeight, rowHeight]);
+        const getSerialNumber = (index) => {
+            if (pagination?.page && pagination?.pageSize) {
+                return (pagination.page - 1) * pagination.pageSize + index + 1;
+            }
+
+            return index + 1;
+        };
+
+        return [
+            {
+                key: '__serialNumber',
+                label: serialNumberLabel,
+                width: 72,
+                align: 'center',
+                className: 'data-table__cell--nowrap',
+                render: (_, index) => getSerialNumber(index),
+            },
+            ...filteredColumns,
+        ];
+    }, [columns, pagination?.page, pagination?.pageSize, serialNumberLabel, showSerialNumber]);
 
     const renderCell = (column, rowData, rowIndex) => {
         if (column.render) {
@@ -50,7 +77,10 @@ const DataTable = ({
     };
 
     return (
-        <Paper elevation={0} className={`virtualized-data-table w-full overflow-hidden rounded-lg border border-slate-200 ${className}`}>
+        <Paper
+            elevation={0}
+            className={`data-table-wrapper w-full overflow-hidden rounded-lg border border-slate-200 ${className}`}
+        >
             {loading ? (
                 <div className="flex min-h-[240px] items-center justify-center py-12">
                     <Loader label="Loading..." center />
@@ -61,78 +91,69 @@ const DataTable = ({
                         {emptyMessage}
                     </Typography>
                 </div>
-            ) : shouldVirtualize ? (
-                <div className="h-[70vh] min-h-[320px] max-h-[70vh] w-full">
-                    <AutoSizer>
-                        {({ width, height }) => (
-                            <VirtualizedTable
-                                width={width}
-                                height={Math.min(height, tableHeight)}
-                                headerHeight={HEADER_HEIGHT}
-                                rowHeight={rowHeight}
-                                rowCount={data.length}
-                                rowGetter={({ index }) => data[index]}
-                                rowKey={({ index }) => String(getRowKey(data[index], index))}
-                                overscanRowCount={8}
-                            >
-                                {resolvedColumns.map((column) => (
-                                    <Column
-                                        key={column.key}
-                                        label={column.label}
-                                        dataKey={column.key}
-                                        width={column.resolvedWidth}
-                                        flexGrow={column.width ? 0 : 1}
-                                        cellRenderer={({ rowData, rowIndex }) => (
-                                            <span className="truncate">
-                                                {renderCell(column, rowData, rowIndex)}
-                                            </span>
-                                        )}
-                                    />
-                                ))}
-                            </VirtualizedTable>
-                        )}
-                    </AutoSizer>
-                </div>
             ) : (
-                <div className="w-full overflow-x-auto">
-                    <table className="min-w-[640px] w-full border-collapse text-sm">
-                        <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-600">
-                                {columns.map((column) => (
-                                    <th
+                <TableContainer className="data-table-container">
+                    <Table stickyHeader={stickyHeader} size="medium" className="data-table">
+                        <TableHead>
+                            <TableRow>
+                                {resolvedColumns.map((column) => (
+                                    <TableCell
                                         key={column.key}
-                                        className="px-3 py-3 font-semibold"
-                                        style={{ width: column.width }}
+                                        align={column.align || 'left'}
+                                        className={column.headerClassName}
+                                        sx={{
+                                            ...getCellSx(column),
+                                            fontWeight: 600,
+                                            whiteSpace: 'nowrap',
+                                            color: 'text.secondary',
+                                            bgcolor: 'grey.50',
+                                            borderBottom: 1,
+                                            borderColor: 'divider',
+                                        }}
                                     >
                                         {column.label}
-                                    </th>
+                                    </TableCell>
                                 ))}
-                            </tr>
-                        </thead>
-                        <tbody>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
                             {data.map((row, index) => (
-                                <tr key={getRowKey(row, index)} className="border-b border-slate-200 hover:bg-slate-50">
-                                    {columns.map((column) => (
-                                        <td key={column.key} className="px-3 py-3 text-slate-800">
+                                <TableRow
+                                    key={getRowKey(row, index)}
+                                    hover
+                                    className="data-table__row"
+                                >
+                                    {resolvedColumns.map((column) => (
+                                        <TableCell
+                                            key={column.key}
+                                            align={column.align || 'left'}
+                                            className={column.className}
+                                            sx={{
+                                                ...getCellSx(column),
+                                                verticalAlign: 'middle',
+                                                borderBottom: 1,
+                                                borderColor: 'divider',
+                                            }}
+                                        >
                                             {renderCell(column, row, index)}
-                                        </td>
+                                        </TableCell>
                                     ))}
-                                </tr>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             )}
 
-            {pagination && (
+            {pagination ? (
                 <Pagination
-                    page={pagination.page}
-                    totalPages={pagination.totalPages}
-                    totalItems={pagination.totalItems}
-                    pageSize={pagination.pageSize}
+                    page={pagination.page ?? DEFAULT_TABLE_PAGINATION.page}
+                    totalPages={pagination.totalPages ?? DEFAULT_TABLE_PAGINATION.totalPages}
+                    totalItems={pagination.totalItems ?? DEFAULT_TABLE_PAGINATION.totalItems}
+                    pageSize={pagination.pageSize ?? DEFAULT_TABLE_PAGINATION.pageSize}
                     onPageChange={pagination.onPageChange}
                 />
-            )}
+            ) : null}
         </Paper>
     );
 };

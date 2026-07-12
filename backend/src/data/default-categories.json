@@ -1,0 +1,426 @@
+{
+  "categories": [
+    {
+      "name": "Fashion",
+      "subcategories": [
+        "Men's Clothing",
+        "Women's Clothing",
+        "Kids' Clothing",
+        "Ethnic Wear",
+        "Western Wear",
+        "Footwear",
+        "Bags & Wallets",
+        "Watches",
+        "Sunglasses",
+        "Belts",
+        "Fashion Accessories",
+        "Innerwear",
+        "Sportswear"
+      ]
+    },
+    {
+      "name": "Electronics",
+      "subcategories": [
+        "Smartphones",
+        "Feature Phones",
+        "Laptops",
+        "Desktops",
+        "Tablets",
+        "Smartwatches",
+        "Headphones",
+        "Earbuds",
+        "Speakers",
+        "Cameras",
+        "Drones",
+        "Printers",
+        "Storage Devices",
+        "Computer Components",
+        "Networking Devices"
+      ]
+    },
+    {
+      "name": "Home & Kitchen",
+      "subcategories": [
+        "Kitchen Appliances",
+        "Cookware",
+        "Dinnerware",
+        "Bakeware",
+        "Kitchen Storage",
+        "Home Decor",
+        "Lighting",
+        "Bedding",
+        "Curtains",
+        "Bathroom Accessories",
+        "Cleaning Supplies"
+      ]
+    },
+    {
+      "name": "Beauty & Personal Care",
+      "subcategories": [
+        "Skincare",
+        "Makeup",
+        "Hair Care",
+        "Fragrances",
+        "Men's Grooming",
+        "Personal Hygiene",
+        "Oral Care",
+        "Beauty Tools",
+        "Bath & Body"
+      ]
+    },
+    {
+      "name": "Grocery",
+      "subcategories": [
+        "Fruits & Vegetables",
+        "Dairy Products",
+        "Bakery",
+        "Snacks",
+        "Beverages",
+        "Rice & Grains",
+        "Pulses",
+        "Spices",
+        "Cooking Oil",
+        "Frozen Foods",
+        "Packaged Foods",
+        "Organic Foods"
+      ]
+    },
+    {
+      "name": "Health & Wellness",
+      "subcategories": [
+        "Vitamins",
+        "Supplements",
+        "Protein Powders",
+        "Fitness Equipment",
+        "Yoga Mats",
+        "Healthcare Devices",
+        "Medical Nutrition",
+        "Wellness Products"
+      ]
+    },
+    {
+      "name": "Sports & Outdoors",
+      "subcategories": [
+        "Cricket",
+        "Football",
+        "Basketball",
+        "Badminton",
+        "Tennis",
+        "Gym Equipment",
+        "Cycling",
+        "Camping & Hiking",
+        "Swimming",
+        "Outdoor Games"
+      ]
+    },
+    {
+      "name": "Books & Stationery",
+      "subcategories": [
+        "Fiction",
+        "Non-Fiction",
+        "Educational Books",
+        "Children's Books",
+        "Competitive Exam Books",
+        "Notebooks",
+        "Office Supplies",
+        "Pens & Pencils",
+        "Art Supplies"
+      ]
+    },
+    {
+      "name": "Toys & Baby Products",
+      "subcategories": [
+        "Educational Toys",
+        "Soft Toys",
+        "Action Figures",
+        "Board Games",
+        "Baby Clothing",
+        "Baby Care",
+        "Diapers",
+        "Baby Feeding",
+        "Strollers",
+        "Baby Gear"
+      ]
+    },
+    {
+      "name": "Automotive",
+      "subcategories": [
+        "Car Accessories",
+        "Bike Accessories",
+        "Helmets",
+        "Tyres",
+        "Engine Oil",
+        "Car Care",
+        "Vehicle Electronics",
+        "Tools"
+      ]
+    },
+    {
+      "name": "Pet Supplies",
+      "subcategories": [
+        "Dog Food",
+        "Cat Food",
+        "Pet Toys",
+        "Pet Beds",
+        "Grooming Supplies",
+        "Pet Healthcare",
+        "Aquariums",
+        "Bird Supplies"
+      ]
+    },
+    {
+      "name": "Jewelry & Accessories",
+      "subcategories": [
+        "Necklaces",
+        "Rings",
+        "Earrings",
+        "Bracelets",
+        "Anklets",
+        "Watches",
+        "Sunglasses",
+        "Handbags",
+        "Wallets",
+        "Fashion Accessories"
+      ]
+    },
+    {
+      "name": "Furniture",
+      "subcategories": [
+        "Sofas",
+        "Beds",
+        "Mattresses",
+        "Dining Tables",
+        "Chairs",
+        "Wardrobes",
+        "TV Units",
+        "Coffee Tables",
+        "Office Furniture",
+        "Storage Cabinets"
+      ]
+    },
+    {
+      "name": "Appliances",
+      "subcategories": [
+        "Refrigerators",
+        "Washing Machines",
+        "Air Conditioners",
+        "Microwave Ovens",
+        "Water Purifiers",
+        "Vacuum Cleaners",
+        "Dishwashers",
+        "Geysers"
+      ]
+    },
+    {
+      "name": "Office & Industrial",
+      "subcategories": [
+        "Office Furniture",
+        "Office Supplies",
+        "Printers",
+        "Industrial Tools",
+        "Safety Equipment",
+        "Packaging Materials",
+        "Storage Solutions"
+      ]
+    },
+    {
+      "name": "Gaming",
+      "subcategories": [
+        "Gaming Consoles",
+        "Gaming PCs",
+        "Gaming Laptops",
+        "Controllers",
+        "Gaming Keyboards",
+        "Gaming Mouse",
+        "VR Headsets",
+        "Gaming Chairs"
+      ]
+    },
+    {
+      "name": "Music & Entertainment",
+      "subcategories": [
+        "Musical Instruments",
+        "Microphones",
+        "Speakers",
+        "Headphones",
+        "DJ Equipment",
+        "Vinyl Records",
+        "Movies",
+        "Collectibles"
+      ]
+    },
+    {
+      "name": "Gifts",
+      "subcategories": [
+        "Personalized Gifts",
+        "Gift Hampers",
+        "Greeting Cards",
+        "Flowers",
+        "Cakes",
+        "Corporate Gifts",
+        "Festival Gifts",
+        "Gift Cards"
+      ]
+    },
+    {
+      "name": "Digital Products",
+      "subcategories": [
+        "eBooks",
+        "Software Licenses",
+        "Online Courses",
+        "Website Templates",
+        "Graphics",
+        "Fonts",
+        "Digital Gift Cards"
+      ]
+    },
+    {
+      "name": "Travel & Luggage",
+      "subcategories": [
+        "Suitcases",
+        "Backpacks",
+        "Duffel Bags",
+        "Travel Organizers",
+        "Passport Holders",
+        "Travel Pillows",
+        "Luggage Accessories"
+      ]
+    },
+    {
+      "name": "Jewelry",
+      "subcategories": [
+        "Gold Jewelry",
+        "Silver Jewelry",
+        "Diamond Jewelry",
+        "Platinum Jewelry",
+        "Bridal Jewelry",
+        "Gemstones",
+        "Fashion Jewelry"
+      ]
+    },
+    {
+      "name": "Kids & Baby",
+      "subcategories": [
+        "Kids' Clothing",
+        "School Supplies",
+        "Educational Toys",
+        "Baby Care",
+        "Baby Feeding",
+        "Baby Furniture",
+        "Baby Safety Products"
+      ]
+    },
+    {
+      "name": "Garden & Outdoor",
+      "subcategories": [
+        "Plants",
+        "Seeds",
+        "Gardening Tools",
+        "Outdoor Furniture",
+        "BBQ Grills",
+        "Planters",
+        "Watering Equipment"
+      ]
+    },
+    {
+      "name": "Tools & Hardware",
+      "subcategories": [
+        "Power Tools",
+        "Hand Tools",
+        "Electrical Tools",
+        "Plumbing Supplies",
+        "Hardware Accessories",
+        "Measuring Tools",
+        "Safety Gear"
+      ]
+    },
+    {
+      "name": "Arts & Crafts",
+      "subcategories": [
+        "Painting Supplies",
+        "Drawing Supplies",
+        "Craft Kits",
+        "Sewing Supplies",
+        "Knitting",
+        "DIY Tools",
+        "Sculpting Materials"
+      ]
+    },
+    {
+      "name": "Luxury Products",
+      "subcategories": [
+        "Luxury Watches",
+        "Designer Bags",
+        "Premium Clothing",
+        "Fine Jewelry",
+        "Luxury Fragrances",
+        "Luxury Home Decor"
+      ]
+    },
+    {
+      "name": "Mobile Accessories",
+      "subcategories": [
+        "Phone Cases",
+        "Screen Protectors",
+        "Chargers",
+        "Power Banks",
+        "USB Cables",
+        "Wireless Chargers",
+        "Car Mounts",
+        "Selfie Sticks"
+      ]
+    },
+    {
+      "name": "Computer Accessories",
+      "subcategories": [
+        "Keyboards",
+        "Mouse",
+        "Monitors",
+        "Webcams",
+        "External Hard Drives",
+        "SSDs",
+        "USB Hubs",
+        "Printers",
+        "Routers"
+      ]
+    },
+    {
+      "name": "Smart Home",
+      "subcategories": [
+        "Smart Lights",
+        "Smart Speakers",
+        "Security Cameras",
+        "Smart Locks",
+        "Smart Plugs",
+        "Video Doorbells",
+        "Home Automation"
+      ]
+    },
+    {
+      "name": "Medical Supplies",
+      "subcategories": [
+        "First Aid Kits",
+        "Blood Pressure Monitors",
+        "Glucometers",
+        "Thermometers",
+        "Pulse Oximeters",
+        "Masks",
+        "Sanitizers",
+        "Wheelchairs"
+      ]
+    },
+    {
+      "name": "Seasonal & Festive",
+      "subcategories": [
+        "Christmas Decorations",
+        "Diwali Decorations",
+        "Halloween Costumes",
+        "Holi Products",
+        "Rakhi Gifts",
+        "Valentine's Gifts",
+        "New Year Decorations",
+        "Festival Lighting"
+      ]
+    }
+  ]
+}

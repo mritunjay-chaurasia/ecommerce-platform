@@ -4,6 +4,7 @@ const {
     createObjectIdSchema,
     shippingAddressSchema,
 } = require('./common.schema');
+const { MAX_LIMIT } = require('../../utils/pagination');
 
 const productIdSchema = createObjectIdSchema('product id');
 const orderIdSchema = createObjectIdSchema('order id');
@@ -24,13 +25,17 @@ const cartItemSchema = Joi.object({
 
 const listStoreProductsQuerySchema = Joi.object({
     search: Joi.string().trim().max(120).allow(''),
-    category: createObjectIdSchema('category id').allow(''),
+    category: Joi.string().trim().max(80).allow(''),
+    subcategory: Joi.string().trim().max(80).allow(''),
+    brand: Joi.string().trim().max(80).allow(''),
     featured: Joi.boolean(),
     sort: Joi.string().valid('newest', 'price_asc', 'price_desc', 'rating').allow(''),
     minPrice: Joi.number().min(0).allow(''),
     maxPrice: Joi.number().min(0).allow(''),
     inStock: Joi.boolean(),
     ids: Joi.string().trim().max(600).allow(''),
+    page: Joi.number().integer().min(1),
+    limit: Joi.number().integer().min(1).max(MAX_LIMIT),
 });
 
 const checkoutSummarySchema = Joi.object({

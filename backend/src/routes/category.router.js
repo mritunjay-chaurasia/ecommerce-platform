@@ -12,12 +12,19 @@ const authorize = require('../middlewares/authorize');
 const joiValidate = require('../middlewares/joiValidate');
 const {
     createCategorySchema,
+    listCategoriesQuerySchema,
     updateCategorySchema,
 } = require('../validators/schemas/category.schema');
 
 
 
-router.get('/categories', authenticate, authorize.admin, asyncHandler(getCategories));
+router.get(
+    '/categories',
+    authenticate,
+    authorize.admin,
+    joiValidate(listCategoriesQuerySchema, 'query'),
+    asyncHandler(getCategories),
+);
 router.post(
     '/categories',
     authenticate,

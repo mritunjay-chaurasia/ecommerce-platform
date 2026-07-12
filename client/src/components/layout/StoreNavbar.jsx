@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiSearch, FiShoppingCart, FiUser, FiPackage, FiLogOut, FiHeart } from 'react-icons/fi';
-import { getStoreProducts } from '../../apis/store.api';
+import { FiSearch, FiShoppingCart, FiUser, FiPackage, FiLogOut, FiHeart, FiRefreshCw } from 'react-icons/fi';
+import { getStoreCategories } from '../../apis/store.api';
 import { useStoreSettings } from '../../context/StoreSettingsProvider';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout as logoutApi } from '../../apis/user.api';
 import { selectIsAuthenticated, selectRole, selectUser, logout } from '../../store/slices/authSlice';
 import { selectCartItemCount } from '../../store/slices/cartSlice';
 import { selectWishlistCount } from '../../store/slices/wishlistSlice';
+import {
+    buildCategoryBrowseUrl,
+    buildSubcategoryBrowseUrl,
+    isCategoryActive,
+} from '../../utils/storeCategory';
 import ThemeToggle from '../theme/ThemeToggle';
 import './StoreNavbar.css';
 
@@ -28,6 +33,9 @@ const StoreNavbar = () => {
     const storeName = settings?.storeName || 'Store';
     const brandInitial = storeName.charAt(0).toUpperCase() || 'S';
 
+    const activeCategory = new URLSearchParams(location.search).get('category') || '';
+    const activeSubcategory = new URLSearchParams(location.search).get('subcategory') || '';
+
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         setSearchInput(params.get('search') || '');
@@ -36,8 +44,8 @@ const StoreNavbar = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await getStoreProducts();
-                setCategories(response.filters?.categories || []);
+                const data = await getStoreCategories();
+                setCategories(data || []);
             } catch {
                 setCategories([]);
             }
@@ -111,6 +119,10 @@ const StoreNavbar = () => {
                                 <FiHeart size={18} />
                                 <span>{wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}</span>
                             </Link>
+                            <Link to="/returns" className="store-nav-action">
+                                <FiRefreshCw size={18} />
+                                <span>Returns</span>
+                            </Link>
                             <Link to="/cart" className="store-nav-action store-nav-cart">
                                 <FiShoppingCart size={18} />
                                 <span>{cartItemCount > 0 ? `Cart (${cartItemCount})` : 'Cart'}</span>
@@ -148,11 +160,40 @@ const StoreNavbar = () => {
 
             {categories.length > 0 ? (
                 <nav className="store-nav-categories" aria-label="Categories">
-                    <Link to="/">All Products</Link>
+                    <Link to="/" className={!activeCategory ? 'active' : ''}>All Products</Link>
                     {categories.map((category) => (
-                        <Link key={category.id} to={`/?category=${category.id}`}>
-                            {category.name}
-                        </Link>
+                        <div key={category.id} className="store-nav-category-item">
+                            <Link
+                                to={buildCategoryBrowseUrl(category.slug)}
+                                className={isCategoryActive(category, activeCategory) && !activeSubcategory ? 'active' : ''}
+                            >
+                                {category.name}
+                            </Link>
+                            {category.subcategories?.length > 0 ? (
+                                <div className="store-nav-subcategory-menu">
+                                    <Link
+                                        to={buildCategoryBrowseUrl(category.slug)}
+                                        className={isCategoryActive(category, activeCategory) && !activeSubcategory ? 'active' : ''}
+                                    >
+                                        All {category.name}
+                                    </Link>
+                                    {category.subcategories.map((subcategory) => (
+                                        <Link
+                                            key={subcategory.id}
+                                            to={buildSubcategoryBrowseUrl(category.slug, subcategory.slug)}
+                                            className={
+                                                isCategoryActive(category, activeCategory)
+                                                && (subcategory.slug === activeSubcategory || subcategory.id === activeSubcategory)
+                                                    ? 'active'
+                                                    : ''
+                                            }
+                                        >
+                                            {subcategory.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
                     ))}
                 </nav>
             ) : null}

@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const passwordSchema = require('./password.schema');
+const { ROLE_VALUES } = require('../../constants/roles');
 
 const signupSchema = Joi.object({
     firstName: Joi.string().trim().min(2).max(30).required()
@@ -73,6 +74,14 @@ const updateUserVerificationSchema = Joi.object({
         'object.missing': 'At least one verification field is required',
     });
 
+const updateUserRoleSchema = Joi.object({
+    role: Joi.string().valid(...ROLE_VALUES).required()
+        .messages({
+            'any.only': 'Role must be customer or admin',
+            'any.required': 'Role is required',
+        }),
+});
+
 const changePasswordSchema = Joi.object({
     currentPassword: Joi.string().required()
         .messages({
@@ -92,5 +101,6 @@ module.exports = {
     resetPasswordSchema,
     updateUserStatusSchema,
     updateUserVerificationSchema,
+    updateUserRoleSchema,
     changePasswordSchema,
 };

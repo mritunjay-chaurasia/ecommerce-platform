@@ -30,6 +30,7 @@ import {
 import useDebounce from '../../utils/useDebounce';
 import formatStatusLabel from '../../utils/formatStatusLabel';
 import { PAGE_SIZE, DISCOUNT_TYPE_OPTIONS, STATUS_FILTER_OPTIONS } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 const emptyForm = {
     code: '',
@@ -75,7 +76,7 @@ const AdminCoupons = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [form, setForm] = useState(emptyForm);
     const [errors, setErrors] = useState({});
     const debouncedSearch = useDebounce(search, 400);
@@ -92,9 +93,11 @@ const AdminCoupons = () => {
             });
 
             setCoupons(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch (err) {
             setCoupons([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load coupons');
         } finally {
             setLoading(false);
@@ -235,11 +238,6 @@ const AdminCoupons = () => {
     }, [confirm, editingId, fetchCoupons, toast]);
 
     const columns = useMemo(() => [
-        {
-            key: 'serialNumber',
-            label: 'S.N.',
-            render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
-        },
         { key: 'code', label: 'Code' },
         {
             key: 'discountType',
@@ -317,7 +315,7 @@ const AdminCoupons = () => {
                 </div>
             ),
         },
-    ], [currency, handleDelete, handleEdit, page]);
+    ], [currency, handleDelete, handleEdit]);
 
     return (
         <div className="w-full">
@@ -360,13 +358,7 @@ const AdminCoupons = () => {
                 loading={loading}
                 rowKey="id"
                 emptyMessage="No coupons found"
-                pagination={{
-                    page,
-                    totalPages: pagination.totalPages,
-                    totalItems: pagination.total,
-                    pageSize: PAGE_SIZE,
-                    onPageChange: setPage,
-                }}
+                pagination={buildTablePagination(pagination, setPage)}
             />
 
             <Modal

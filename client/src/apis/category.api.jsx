@@ -1,8 +1,8 @@
 import apiClients from './index';
 
-const getCategories = async () => {
-    const response = await apiClients.get('/admin/categories');
-    return response.data.data;
+const getCategories = async (params) => {
+    const response = await apiClients.get('/admin/categories', { params });
+    return response.data;
 };
 
 const createCategory = async (payload) => {

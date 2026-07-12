@@ -1,4 +1,5 @@
 const Category = require('../models/category.model');
+const Subcategory = require('../models/subcategory.model');
 const { Order } = require('../models/order.model');
 const { Review } = require('../models/review.model');
 const Product = require('../models/product.model');
@@ -13,6 +14,12 @@ const { placeOrder } = require('../utils/placeOrder');
 const { renderInvoiceHtml } = require('../utils/renderInvoice');
 const { CANCELLABLE_ORDER_STATUSES, ORDER_STATUS } = require('../../../shared/constants/order');
 const { getEffectivePrice } = require('../../../shared/utils/pricing');
+const {
+    buildActiveProductCatalogFilter,
+    resolveCategoryRef,
+    resolveSubcategoryRef,
+} = require('../utils/storeCategoryHelpers');
+const { buildPagination, hasPaginationQuery, parsePaginationQuery } = require('../utils/pagination');
 
 const getProductReviewStats = async (productIds) => {
     if (!productIds.length) {
@@ -63,13 +70,81 @@ const getStoreProduct = async (req, res) => {
     });
 };
 
+const getStoreCategories = async (req, res) => {
+    const [rootCategories, subcategories] = await Promise.all([
+        Category.find({ isActive: true })
+            .sort({ name: 1 })
+            .select('name slug description')
+            .lean(),
+        Subcategory.find({ isActive: true })
+            .sort({ name: 1 })
+            .select('name slug description category')
+            .lean(),
+    ]);
+
+    const subcategoriesByCategory = subcategories.reduce((groups, subcategory) => {
+        const categoryId = String(subcategory.category);
+        if (!groups[categoryId]) {
+            groups[categoryId] = [];
+        }
+        groups[categoryId].push({
+            id: String(subcategory._id),
+            name: subcategory.name,
+            slug: subcategory.slug,
+            description: subcategory.description || '',
+        });
+        return groups;
+    }, {});
+
+    return res.status(200).json({
+        success: true,
+        data: rootCategories.map((category) => ({
+            id: String(category._id),
+            name: category.name,
+            slug: category.slug,
+            description: category.description || '',
+            subcategories: subcategoriesByCategory[String(category._id)] || [],
+        })),
+    });
+};
+
+const getStoreBrands = async (req, res) => {
+    const catalogFilter = await buildActiveProductCatalogFilter();
+    const brands = await Product.distinct('brand', {
+        isActive: true,
+        ...catalogFilter,
+        brand: { $nin: ['', null] },
+    });
+
+    return res.status(200).json({
+        success: true,
+        data: brands.sort((left, right) => left.localeCompare(right)),
+    });
+};
+
 const getStoreProducts = async (req, res) => {
-    const filter = { isActive: true };
+    const catalogFilter = await buildActiveProductCatalogFilter();
+    const filter = { isActive: true, ...catalogFilter };
     const search = req.query.search?.trim();
     const sort = req.query.sort || 'newest';
 
-    if (req.query.category) {
-        filter.category = req.query.category;
+    if (req.query.subcategory) {
+        const subcategory = await resolveSubcategoryRef(req.query.subcategory, { activeOnly: true });
+
+        if (!subcategory) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        filter.subcategory = subcategory._id;
+        filter.category = subcategory.category;
+    } else if (req.query.category) {
+        const category = await resolveCategoryRef(req.query.category, { activeOnly: true });
+
+        if (!category) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        filter.category = category._id;
     }
 
     if (req.query.featured !== undefined) {
@@ -80,21 +155,30 @@ const getStoreProducts = async (req, res) => {
         filter._id = { $in: req.query.ids.split(',').map((id) => id.trim()).filter(Boolean) };
     }
 
+    const brand = req.query.brand?.trim();
+
+    if (brand) {
+        filter.brand = { $regex: new RegExp(`^${escapeRegex(brand)}$`, 'i') };
+    }
+
     if (search) {
         const safeSearch = escapeRegex(search);
-        filter.$or = [
-            { name: { $regex: safeSearch, $options: 'i' } },
-            { brand: { $regex: safeSearch, $options: 'i' } },
-            { sku: { $regex: safeSearch, $options: 'i' } },
+        filter.$and = [
+            ...(filter.$and || []),
+            {
+                $or: [
+                    { name: { $regex: safeSearch, $options: 'i' } },
+                    { brand: { $regex: safeSearch, $options: 'i' } },
+                    { sku: { $regex: safeSearch, $options: 'i' } },
+                ],
+            },
         ];
     }
 
-    const [productsRaw, categories] = await Promise.all([
-        Product.find(filter)
-            .populate('category', 'name slug')
-            .lean(),
-        Category.find({ isActive: true }).sort({ name: 1 }).lean(),
-    ]);
+    const productsRaw = await Product.find(filter)
+        .populate('category', 'name slug')
+        .populate('subcategory', 'name slug')
+        .lean();
 
     let products = productsRaw;
 
@@ -142,16 +226,23 @@ const getStoreProducts = async (req, res) => {
 
     const formattedProducts = products.map((product) => formatStoreProduct(product, reviewStats));
 
+    if (hasPaginationQuery(req.query)) {
+        const { page, limit, skip } = parsePaginationQuery(req.query, {
+            defaultLimit: 12,
+            maxLimit: 48,
+        });
+        const paginatedProducts = formattedProducts.slice(skip, skip + limit);
+
+        return res.status(200).json({
+            success: true,
+            data: paginatedProducts,
+            pagination: buildPagination(page, limit, formattedProducts.length),
+        });
+    }
+
     return res.status(200).json({
         success: true,
         data: formattedProducts,
-        filters: {
-            categories: categories.map((category) => ({
-                id: String(category._id),
-                name: category.name,
-                slug: category.slug,
-            })),
-        },
     });
 };
 
@@ -192,9 +283,18 @@ const getCheckoutSummary = async (req, res) => {
 };
 
 const createStoreOrder = async (req, res) => {
-    const order = await placeOrder({ body: req.body, user: req.user });
+    if (!req.user && !req.body.shippingAddress?.email) {
+        throw new ApiError(400, 'Email is required for guest checkout');
+    }
+
+    const order = await placeOrder({ body: req.body, user: req.user || null });
 
     notifyOrderConfirmation(order);
+
+    if (req.user) {
+        const { clearUserCart } = require('../controllers/cart.controller');
+        await clearUserCart(req.user._id);
+    }
 
     return res.status(201).json({
         success: true,
@@ -320,6 +420,8 @@ const cancelMyOrder = async (req, res) => {
 };
 
 module.exports = {
+    getStoreCategories,
+    getStoreBrands,
     getStoreProduct,
     getStoreProducts,
     getRelatedProducts,

@@ -42,6 +42,16 @@ const cancelMyOrder = async (orderId, payload = {}) => {
     return response.data;
 };
 
+const getStoreCategories = async () => {
+    const response = await apiClients.get('/categories');
+    return response.data.data;
+};
+
+const getStoreBrands = async () => {
+    const response = await apiClients.get('/brands');
+    return response.data.data;
+};
+
 const getStoreProducts = async (params) => {
     const response = await apiClients.get('/products', { params });
     return response.data;
@@ -68,6 +78,8 @@ const submitProductReview = async (payload) => {
 };
 
 export {
+    getStoreCategories,
+    getStoreBrands,
     getStoreProducts,
     getStoreProduct,
     getProductReviews,

@@ -30,6 +30,12 @@
     "icon": "Heart"
   },
   {
+    "id": "returns",
+    "label": "Returns",
+    "path": "/returns",
+    "icon": "RotateCcw"
+  },
+  {
     "id": "cart",
     "label": "Cart",
     "path": "/cart",

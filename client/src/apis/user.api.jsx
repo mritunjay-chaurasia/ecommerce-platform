@@ -20,6 +20,11 @@ const getUsers = async (params) => {
     return response.data;
 };
 
+const getUserById = async (userId) => {
+    const response = await apiClients.get(`/admin/users/${userId}`);
+    return response.data.data;
+};
+
 const updateUserStatus = async (userId, blocked) => {
     const response = await apiClients.patch(`/admin/users/${userId}/status`, { blocked });
     return response.data;
@@ -60,6 +65,21 @@ const changePassword = async (payload) => {
     return response.data;
 };
 
+const verifyEmail = async (token) => {
+    const response = await apiClients.get('/auth/verify-email', { params: { token } });
+    return response.data;
+};
+
+const resendVerificationEmail = async () => {
+    const response = await apiClients.post('/auth/resend-verification');
+    return response.data;
+};
+
+const updateUserRole = async (userId, role) => {
+    const response = await apiClients.patch(`/admin/users/${userId}/role`, { role });
+    return response.data;
+};
+
 export {
     login,
     signup,
@@ -67,10 +87,14 @@ export {
     updateProfile,
     changePassword,
     getUsers,
+    getUserById,
     updateUserStatus,
     updateUserVerification,
     forgotPassword,
     resetPassword,
     logout,
     refreshSession,
+    verifyEmail,
+    resendVerificationEmail,
+    updateUserRole,
 };

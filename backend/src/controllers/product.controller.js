@@ -1,20 +1,13 @@
-const Category = require('../models/category.model');
 const Product = require('../models/product.model');
 const ApiError = require('../utils/ApiError');
 const escapeRegex = require('../utils/escapeRegex');
 const buildUniqueSlug = require('../utils/buildUniqueSlug');
+const {
+    validateProductCategories,
+} = require('../utils/categoryHelpers');
+const { buildPagination, hasPaginationQuery, parsePaginationQuery } = require('../utils/pagination');
 const { formatAdminProduct } = require('../utils/formatters/product');
 const { LOW_STOCK_THRESHOLD } = require('../../../shared/constants/inventory');
-
-const ensureCategoryExists = async (categoryId) => {
-    const category = await Category.findById(categoryId).select('_id name');
-
-    if (!category) {
-        throw new ApiError(404, 'Category not found');
-    }
-
-    return category;
-};
 
 const validatePriceRange = (price, salePrice) => {
     if (salePrice !== null && salePrice !== undefined && salePrice > price) {
@@ -35,8 +28,30 @@ const getProducts = async (req, res) => {
         ];
     }
 
+    if (hasPaginationQuery(req.query)) {
+        const { page, limit, skip } = parsePaginationQuery(req.query);
+
+        const [products, total] = await Promise.all([
+            Product.find(filter)
+                .populate('category', 'name slug')
+                .populate('subcategory', 'name slug')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Product.countDocuments(filter),
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: products.map(formatAdminProduct),
+            pagination: buildPagination(page, limit, total),
+        });
+    }
+
     const products = await Product.find(filter)
         .populate('category', 'name slug')
+        .populate('subcategory', 'name slug')
         .sort({ createdAt: -1 })
         .lean();
 
@@ -47,9 +62,7 @@ const getProducts = async (req, res) => {
 };
 
 const getInventoryProducts = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const search = req.query.search?.trim();
     const category = req.query.category?.trim();
     const inventoryStatus = req.query.inventoryStatus?.trim();
@@ -83,6 +96,7 @@ const getInventoryProducts = async (req, res) => {
     const [products, total, totalProducts, inStockCount, lowStockCount, outOfStockCount] = await Promise.all([
         Product.find(filter)
             .populate('category', 'name slug')
+            .populate('subcategory', 'name slug')
             .sort({ stockQuantity: 1, updatedAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -97,12 +111,7 @@ const getInventoryProducts = async (req, res) => {
     return res.status(200).json({
         success: true,
         data: products.map(formatAdminProduct),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        pagination: buildPagination(page, limit, total),
         summary: {
             totalProducts,
             inStockCount,
@@ -118,6 +127,7 @@ const createProduct = async (req, res) => {
         name,
         description,
         category,
+        subcategory,
         brand,
         sku,
         price,
@@ -128,7 +138,7 @@ const createProduct = async (req, res) => {
         isFeatured,
     } = req.body;
 
-    await ensureCategoryExists(category);
+    await validateProductCategories(category, subcategory || null);
     validatePriceRange(price, salePrice);
 
     const existingName = await Product.findOne({
@@ -155,6 +165,7 @@ const createProduct = async (req, res) => {
         slug,
         description: description || '',
         category,
+        subcategory: subcategory || null,
         brand: brand || '',
         sku: normalizedSku,
         price,
@@ -166,6 +177,7 @@ const createProduct = async (req, res) => {
     });
 
     await product.populate('category', 'name slug');
+    await product.populate('subcategory', 'name slug');
 
     return res.status(201).json({
         success: true,
@@ -185,8 +197,11 @@ const updateProduct = async (req, res) => {
     const nextPrice = req.body.price ?? product.price;
     const nextSalePrice = req.body.salePrice !== undefined ? req.body.salePrice : product.salePrice;
 
-    if (req.body.category) {
-        await ensureCategoryExists(req.body.category);
+    const nextCategory = req.body.category ?? product.category;
+    const nextSubcategory = req.body.subcategory !== undefined ? req.body.subcategory : product.subcategory;
+
+    if (req.body.category !== undefined || req.body.subcategory !== undefined) {
+        await validateProductCategories(nextCategory, nextSubcategory || null);
     }
 
     validatePriceRange(nextPrice, nextSalePrice);
@@ -233,6 +248,10 @@ const updateProduct = async (req, res) => {
         product.category = req.body.category;
     }
 
+    if (req.body.subcategory !== undefined) {
+        product.subcategory = req.body.subcategory || null;
+    }
+
     if (req.body.brand !== undefined) {
         product.brand = req.body.brand;
     }
@@ -263,6 +282,7 @@ const updateProduct = async (req, res) => {
 
     await product.save();
     await product.populate('category', 'name slug');
+    await product.populate('subcategory', 'name slug');
 
     return res.status(200).json({
         success: true,
@@ -297,12 +317,56 @@ const updateProductStock = async (req, res) => {
     product.stockQuantity = stockQuantity;
     await product.save();
     await product.populate('category', 'name slug');
+    await product.populate('subcategory', 'name slug');
 
     return res.status(200).json({
         success: true,
         message: 'Product stock updated successfully',
         data: formatAdminProduct(product),
     });
+};
+
+const exportProductsCsv = async (req, res) => {
+    const products = await Product.find()
+        .populate('category', 'name')
+        .populate('subcategory', 'name')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    const escapeCsv = (value) => {
+        const normalized = String(value ?? '');
+        return `"${normalized.replace(/"/g, '""')}"`;
+    };
+
+    const header = [
+        'name',
+        'sku',
+        'brand',
+        'category',
+        'subcategory',
+        'price',
+        'salePrice',
+        'stockQuantity',
+        'isActive',
+        'isFeatured',
+    ].join(',');
+
+    const rows = products.map((product) => [
+        escapeCsv(product.name),
+        escapeCsv(product.sku),
+        escapeCsv(product.brand),
+        escapeCsv(product.category?.name || ''),
+        escapeCsv(product.subcategory?.name || ''),
+        escapeCsv(product.price),
+        escapeCsv(product.salePrice ?? ''),
+        escapeCsv(product.stockQuantity),
+        escapeCsv(product.isActive),
+        escapeCsv(product.isFeatured),
+    ].join(','));
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="products-export.csv"');
+    return res.status(200).send([header, ...rows].join('\n'));
 };
 
 module.exports = {
@@ -312,4 +376,5 @@ module.exports = {
     updateProduct,
     updateProductStock,
     deleteProduct,
+    exportProductsCsv,
 };

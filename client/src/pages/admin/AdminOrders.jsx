@@ -22,6 +22,7 @@ import {
     PAYMENT_STATUS_OPTIONS,
     PAGE_SIZE,
 } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 const emptyForm = {
     orderStatus: 'pending',
@@ -41,7 +42,7 @@ const AdminOrders = () => {
     const [page, setPage] = useState(1);
     const [orderStatusFilter, setOrderStatusFilter] = useState('');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form, setForm] = useState(emptyForm);
@@ -61,9 +62,11 @@ const AdminOrders = () => {
             });
 
             setOrders(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch (err) {
             setOrders([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load orders');
         } finally {
             setLoading(false);
@@ -174,11 +177,6 @@ const AdminOrders = () => {
     };
 
     const columns = useMemo(() => [
-        {
-            key: 'serialNumber',
-            label: 'S.N.',
-            render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
-        },
         { key: 'orderNumber', label: 'Order No.' },
         {
             key: 'customerName',
@@ -246,7 +244,7 @@ const AdminOrders = () => {
                 </Tooltip>
             ),
         },
-    ], [currency, page]);
+    ], [currency]);
 
     return (
         <div className="w-full">
@@ -294,13 +292,7 @@ const AdminOrders = () => {
                 loading={loading}
                 rowKey="id"
                 emptyMessage="No orders found"
-                pagination={{
-                    page,
-                    totalPages: pagination.totalPages,
-                    totalItems: pagination.total,
-                    pageSize: PAGE_SIZE,
-                    onPageChange: setPage,
-                }}
+                pagination={buildTablePagination(pagination, setPage)}
             />
 
             <Modal

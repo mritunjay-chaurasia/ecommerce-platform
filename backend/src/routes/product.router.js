@@ -7,6 +7,7 @@ const {
     updateProduct,
     updateProductStock,
     deleteProduct,
+    exportProductsCsv,
 } = require('../controllers/product.controller');
 const asyncHandler = require('../middlewares/asyncHandler');
 const authenticate = require('../middlewares/authenticate');
@@ -14,6 +15,7 @@ const authorize = require('../middlewares/authorize');
 const joiValidate = require('../middlewares/joiValidate');
 const {
     createProductSchema,
+    listProductsQuerySchema,
     updateProductSchema,
 } = require('../validators/schemas/product.schema');
 const {
@@ -22,7 +24,19 @@ const {
     updateProductStockSchema,
 } = require('../validators/schemas/inventory.schema');
 
-router.get('/products', authenticate, authorize.admin, asyncHandler(getProducts));
+router.get(
+    '/products/export',
+    authenticate,
+    authorize.admin,
+    asyncHandler(exportProductsCsv),
+);
+router.get(
+    '/products',
+    authenticate,
+    authorize.admin,
+    joiValidate(listProductsQuerySchema, 'query'),
+    asyncHandler(getProducts),
+);
 router.get(
     '/inventory',
     authenticate,

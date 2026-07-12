@@ -11,6 +11,8 @@ const {
     forgotPassword,
     resetPassword,
     changePassword,
+    verifyEmail,
+    resendVerificationEmail,
 } = require('../controllers/auth.controller');
 const { googleCallback, googleFailure } = require('../controllers/oauth.controller');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -45,6 +47,8 @@ router.patch('/profile', authenticate, joiValidate(updateProfileSchema), asyncHa
 router.post('/change-password', authenticate, joiValidate(changePasswordSchema), asyncHandler(changePassword));
 router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidator, expressValidate, asyncHandler(forgotPassword));
 router.post('/reset-password', resetPasswordLimiter, joiValidate(resetPasswordSchema), asyncHandler(resetPassword));
+router.get('/verify-email', asyncHandler(verifyEmail));
+router.post('/resend-verification', authenticate, asyncHandler(resendVerificationEmail));
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     router.get('/google',

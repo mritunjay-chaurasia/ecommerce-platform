@@ -14,10 +14,15 @@ const TablePagination = ({
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    if (!totalPages || totalPages <= 1) return null;
+    if (!totalItems) {
+        return null;
+    }
 
-    const start = (page - 1) * pageSize + 1;
-    const end = Math.min(page * pageSize, totalItems);
+    const safePage = page || 1;
+    const safePageSize = pageSize || totalItems;
+    const safeTotalPages = Math.max(1, totalPages || 1);
+    const start = (safePage - 1) * safePageSize + 1;
+    const end = Math.min(safePage * safePageSize, totalItems);
 
     return (
         <Box className="flex flex-col items-center justify-between gap-3 border-t border-slate-200 px-3 py-3 sm:flex-row sm:px-4">
@@ -25,17 +30,19 @@ const TablePagination = ({
                 Showing {start}-{end} of {totalItems}
             </Typography>
 
-            <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(_, value) => onPageChange(value)}
-                color="primary"
-                size={isMobile ? 'small' : 'medium'}
-                siblingCount={isMobile ? 0 : 1}
-                boundaryCount={isMobile ? 1 : 1}
-                showFirstButton={!isMobile}
-                showLastButton={!isMobile}
-            />
+            {safeTotalPages > 1 ? (
+                <Pagination
+                    count={safeTotalPages}
+                    page={safePage}
+                    onChange={(_, value) => onPageChange(value)}
+                    color="primary"
+                    size={isMobile ? 'small' : 'medium'}
+                    siblingCount={isMobile ? 0 : 1}
+                    boundaryCount={isMobile ? 1 : 1}
+                    showFirstButton={!isMobile}
+                    showLastButton={!isMobile}
+                />
+            ) : null}
         </Box>
     );
 };

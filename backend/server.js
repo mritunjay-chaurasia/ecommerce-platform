@@ -9,9 +9,11 @@ const { connectDB, disconnectDB } = require('./src/config/db.config');
 validateEnv();
 
 const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === 'production';
 const cpusLength = os.cpus().length;
-const workerCount = Number(process.env.CLUSTER_WORKERS)
-    || (process.env.NODE_ENV === 'production' ? cpusLength : 1);
+const workerCount = isProduction
+    ? (Number(process.env.CLUSTER_WORKERS) || cpusLength)
+    : 1;
 
 let isShuttingDown = false;
 

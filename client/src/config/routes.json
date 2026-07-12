@@ -76,6 +76,56 @@
     "title": "Cart"
   },
   {
+    "path": "/checkout",
+    "name": "Checkout",
+    "component": "Checkout",
+    "title": "Checkout"
+  },
+  {
+    "path": "/returns",
+    "name": "Returns",
+    "component": "Returns",
+    "title": "My Returns",
+    "protected": true,
+    "roles": ["customer"]
+  },
+  {
+    "path": "/verify-email",
+    "name": "VerifyEmail",
+    "component": "VerifyEmail",
+    "title": "Verify Email"
+  },
+  {
+    "path": "/about",
+    "name": "About",
+    "component": "StaticPage",
+    "title": "About Us"
+  },
+  {
+    "path": "/contact",
+    "name": "Contact",
+    "component": "StaticPage",
+    "title": "Contact Us"
+  },
+  {
+    "path": "/faq",
+    "name": "FAQ",
+    "component": "StaticPage",
+    "title": "FAQ"
+  },
+  {
+    "path": "/terms",
+    "name": "Terms",
+    "component": "StaticPage",
+    "title": "Terms of Service"
+  },
+  {
+    "path": "/privacy",
+    "name": "Privacy",
+    "component": "StaticPage",
+    "title": "Privacy Policy"
+  },
+  {
     "path": "/orders/:orderId",
     "name": "OrderDetail",
     "component": "OrderDetail",
@@ -104,6 +154,14 @@
     "name": "AdminUsers",
     "component": "AdminUsers",
     "title": "Manage Users",
+    "protected": true,
+    "roles": ["admin"]
+  },
+  {
+    "path": "/admin/users/:userId",
+    "name": "AdminUserDetail",
+    "component": "AdminUserDetail",
+    "title": "User Details",
     "protected": true,
     "roles": ["admin"]
   },

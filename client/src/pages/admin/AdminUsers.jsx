@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { IconButton, Tooltip } from '@mui/material';
 import {
     getUsers,
-    updateUserStatus,
-    updateUserVerification,
     logout as logoutApi,
 } from '../../apis/user.api';
 import { useAppDispatch } from '../../store/hooks';
@@ -17,8 +17,8 @@ import {
     showToastMessage,
     useConfirm,
 } from '../../components/ui';
-import { showApiError } from '../../components/ui/Toast/toastHelpers';
 import useDebounce from '../../utils/useDebounce';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 const PAGE_SIZE = 10;
 
@@ -29,10 +29,9 @@ const AdminUsers = () => {
     const { confirm } = useConfirm();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [actionKey, setActionKey] = useState(null);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const debouncedSearch = useDebounce(search, 400);
     const isSearchPending = search !== debouncedSearch;
 
@@ -45,9 +44,11 @@ const AdminUsers = () => {
                 search: debouncedSearch || undefined,
             });
             setUsers(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch {
             setUsers([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showToastMessage(toast, 'Failed to load users', 'error');
         } finally {
             setLoading(false);
@@ -66,76 +67,9 @@ const AdminUsers = () => {
         setPage(1);
     }, [search]);
 
-    const handleToggleBlock = useCallback(async (user) => {
-        const isBlocked = user.status === 'suspended' || !user.isActive;
-
-        const confirmed = await confirm({
-            title: isBlocked ? 'Unblock User' : 'Block User',
-            message: isBlocked
-                ? `Allow ${user.name} to sign in again?`
-                : `Block ${user.name}? They will be logged out and unable to sign in.`,
-            confirmText: isBlocked ? 'Unblock' : 'Block',
-            cancelText: 'Cancel',
-            variant: isBlocked ? 'primary' : 'danger',
-        });
-
-        if (!confirmed) {
-            return;
-        }
-
-        const nextActionKey = `${user.id}:status`;
-        setActionKey(nextActionKey);
-
-        try {
-            const response = await updateUserStatus(user.id, !isBlocked);
-            showToastMessage(toast, response.message, 'success');
-            await fetchUsers();
-        } catch (err) {
-            showApiError(toast, err, isBlocked ? 'Failed to unblock user' : 'Failed to block user');
-        } finally {
-            setActionKey(null);
-        }
-    }, [confirm, fetchUsers, toast]);
-
-    const handleToggleVerification = useCallback(async (user, field) => {
-        const isVerified = field === 'emailVerified'
-            ? user.isEmailVerified
-            : user.isPhoneVerified;
-        const label = field === 'emailVerified' ? 'email' : 'phone';
-
-        const confirmed = await confirm({
-            title: isVerified ? `Unverify ${label}` : `Verify ${label}`,
-            message: isVerified
-                ? `Mark ${user.name}'s ${label} as unverified?`
-                : `Mark ${user.name}'s ${label} as verified?`,
-            confirmText: isVerified ? 'Unverify' : 'Verify',
-            cancelText: 'Cancel',
-            variant: isVerified ? 'outline' : 'primary',
-        });
-
-        if (!confirmed) {
-            return;
-        }
-
-        const nextActionKey = `${user.id}:${field}`;
-        setActionKey(nextActionKey);
-
-        try {
-            const response = await updateUserVerification(user.id, {
-                [field === 'emailVerified' ? 'emailVerified' : 'phoneVerified']: !isVerified,
-            });
-            showToastMessage(toast, response.message, 'success');
-            await fetchUsers();
-        } catch (err) {
-            showApiError(
-                toast,
-                err,
-                isVerified ? `Failed to unverify ${label}` : `Failed to verify ${label}`,
-            );
-        } finally {
-            setActionKey(null);
-        }
-    }, [confirm, fetchUsers, toast]);
+    const handleViewUser = useCallback((userId) => {
+        navigate(`/admin/users/${userId}`);
+    }, [navigate]);
 
     const handleLogout = async () => {
         const confirmed = await confirm({
@@ -210,48 +144,25 @@ const AdminUsers = () => {
         {
             key: 'actions',
             label: 'Actions',
-            render: (row) => {
-                const isBlocked = row.status === 'suspended' || !row.isActive;
-
-                return (
-                    <div className="flex min-w-[180px] flex-col gap-2">
-                        <Button
-                            size="sm"
-                            variant={row.isEmailVerified ? 'outline' : 'primary'}
-                            loading={actionKey === `${row.id}:emailVerified`}
-                            disabled={Boolean(actionKey && actionKey !== `${row.id}:emailVerified`)}
-                            onClick={() => handleToggleVerification(row, 'emailVerified')}
-                        >
-                            {row.isEmailVerified ? 'Unverify Email' : 'Verify Email'}
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={row.isPhoneVerified ? 'outline' : 'primary'}
-                            loading={actionKey === `${row.id}:phoneVerified`}
-                            disabled={Boolean(actionKey && actionKey !== `${row.id}:phoneVerified`)}
-                            onClick={() => handleToggleVerification(row, 'phoneVerified')}
-                        >
-                            {row.isPhoneVerified ? 'Unverify Phone' : 'Verify Phone'}
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={isBlocked ? 'outline' : 'danger'}
-                            loading={actionKey === `${row.id}:status`}
-                            disabled={row.role === 'admin' || Boolean(actionKey && actionKey !== `${row.id}:status`)}
-                            onClick={() => handleToggleBlock(row)}
-                        >
-                            {isBlocked ? 'Unblock' : 'Block'}
-                        </Button>
-                        {row.role === 'admin' && (
-                            <span className="text-xs text-slate-400">
-                                Blocking is disabled for admin accounts.
-                            </span>
-                        )}
-                    </div>
-                );
-            },
+            render: (row) => (
+                <Tooltip title="View user details">
+                    <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleViewUser(row.id)}
+                        aria-label="View user details"
+                        sx={{
+                            border: 1,
+                            borderColor: 'primary.main',
+                            borderRadius: 2,
+                        }}
+                    >
+                        <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            ),
         },
-    ], [actionKey, handleToggleBlock, handleToggleVerification]);
+    ], [handleViewUser]);
 
     return (
         <div className="w-full">
@@ -281,13 +192,7 @@ const AdminUsers = () => {
                 loading={loading}
                 rowKey="id"
                 emptyMessage="No users found"
-                pagination={{
-                    page,
-                    totalPages: pagination.totalPages,
-                    totalItems: pagination.total,
-                    pageSize: PAGE_SIZE,
-                    onPageChange: setPage,
-                }}
+                pagination={buildTablePagination(pagination, setPage)}
             />
         </div>
     );

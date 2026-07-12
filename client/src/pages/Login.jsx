@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { login as loginApi } from '../apis/user.api';
 import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
+import { markCartMergePending } from '../utils/cartMerge';
 import {
     InputField,
     PasswordField,
@@ -81,6 +82,7 @@ const Login = () => {
 
         try {
             const userData = await loginApi(form);
+            markCartMergePending();
             dispatch(loginSuccess(userData));
             showToastMessage(toast, 'Logged in successfully', 'success');
             navigate(redirectPath, { replace: true });

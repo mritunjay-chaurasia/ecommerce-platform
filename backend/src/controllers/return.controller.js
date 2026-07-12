@@ -5,6 +5,11 @@ const ApiError = require('../utils/ApiError');
 const escapeRegex = require('../utils/escapeRegex');
 const { RETURNABLE_ORDER_STATUSES, ORDER_STATUS } = require('../../../shared/constants/order');
 const { RETURN_REQUEST_STATUS } = require('../../../shared/constants/return');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
+const { sendEmailSafe } = require('../utils/sendEmail');
+const { buildReturnStatusUpdateEmail } = require('../templates/emailTemplates');
+const { getStoreSettings } = require('../utils/storeSettings');
+const formatStatusLabel = require('../../../shared/utils/formatStatusLabel');
 
 const formatReturnRequest = (request) => ({
     id: String(request._id),
@@ -74,8 +79,7 @@ const getMyReturnRequests = async (req, res) => {
 };
 
 const getAdminReturnRequests = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const filter = {};
 
     if (req.query.status) {
@@ -91,8 +95,6 @@ const getAdminReturnRequests = async (req, res) => {
         ];
     }
 
-    const skip = (page - 1) * limit;
-
     const [requests, total] = await Promise.all([
         ReturnRequest.find(filter)
             .sort({ createdAt: -1 })
@@ -105,12 +107,7 @@ const getAdminReturnRequests = async (req, res) => {
     return res.status(200).json({
         success: true,
         data: requests.map(formatReturnRequest),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        pagination: buildPagination(page, limit, total),
     });
 };
 
@@ -163,6 +160,21 @@ const updateReturnRequestStatus = async (req, res) => {
     }
 
     await returnRequest.save();
+
+    const settings = await getStoreSettings();
+    const returnEmail = await buildReturnStatusUpdateEmail({
+        storeName: settings.storeName,
+        orderNumber: returnRequest.orderNumber,
+        statusLabel: formatStatusLabel(returnRequest.status),
+        adminNotes: returnRequest.adminNotes,
+        supportEmail: settings.contactEmail,
+    });
+
+    sendEmailSafe({
+        to: returnRequest.customerEmail,
+        subject: returnEmail.subject,
+        html: returnEmail.html,
+    });
 
     return res.status(200).json({
         success: true,

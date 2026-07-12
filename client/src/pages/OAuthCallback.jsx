@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
+import { markCartMergePending } from '../utils/cartMerge';
 import { getProfile } from '../apis/user.api';
 import { PageCard, Loader, showToastMessage, useToast } from '../components/ui';
 
@@ -24,6 +25,7 @@ const OAuthCallback = () => {
         const completeLogin = async () => {
             try {
                 const userData = await getProfile();
+                markCartMergePending();
                 dispatch(loginSuccess(userData));
                 showToastMessage(toast, 'Logged in with Google', 'success');
                 navigate('/dashboard', { replace: true });

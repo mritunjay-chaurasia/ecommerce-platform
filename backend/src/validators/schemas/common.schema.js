@@ -40,6 +40,9 @@ const addressFieldsSchema = {
 
 const shippingAddressSchema = Joi.object({
     fullName: addressFieldsSchema.fullName,
+    email: Joi.string().trim().email().lowercase().messages({
+        'string.email': 'A valid email is required',
+    }),
     phone: addressFieldsSchema.phone,
     line1: addressFieldsSchema.line1,
     line2: addressFieldsSchema.line2,
@@ -59,6 +62,16 @@ const createPaginationQuerySchema = (options = {}) => {
     });
 };
 
+const createOptionalPaginationQuerySchema = (options = {}) => {
+    const { maxLimit = 50 } = options;
+
+    return Joi.object({
+        page: Joi.number().integer().min(1),
+        limit: Joi.number().integer().min(1).max(maxLimit),
+        search: Joi.string().trim().max(120).allow(''),
+    });
+};
+
 module.exports = {
     createObjectIdSchema,
     phoneSchema,
@@ -67,4 +80,5 @@ module.exports = {
     addressFieldsSchema,
     shippingAddressSchema,
     createPaginationQuerySchema,
+    createOptionalPaginationQuerySchema,
 };

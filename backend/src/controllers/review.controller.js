@@ -3,6 +3,7 @@ const Product = require('../models/product.model');
 const ApiError = require('../utils/ApiError');
 const escapeRegex = require('../utils/escapeRegex');
 const { hasUserPurchasedProduct } = require('../utils/orderVerification');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
 
 const formatReview = (review) => ({
     id: review._id,
@@ -59,8 +60,7 @@ const buildReviewFilter = (query) => {
 };
 
 const getAdminReviews = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const filter = buildReviewFilter(req.query);
 
     const [reviews, total] = await Promise.all([
@@ -68,7 +68,7 @@ const getAdminReviews = async (req, res) => {
             .populate('product', 'name slug')
             .populate('user', 'firstName lastName email')
             .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
+            .skip(skip)
             .limit(limit)
             .lean(),
         Review.countDocuments(filter),
@@ -77,12 +77,7 @@ const getAdminReviews = async (req, res) => {
     return res.status(200).json({
         success: true,
         data: reviews.map(formatReview),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.max(1, Math.ceil(total / limit)),
-        },
+        pagination: buildPagination(page, limit, total),
     });
 };
 

@@ -10,7 +10,7 @@ import { StoreSettingsProvider } from '../../context/StoreSettingsProvider';
 import { useAppSelector } from '../../store/hooks';
 import { selectIsAuthenticated, selectRole } from '../../store/slices/authSlice';
 
-const AUTH_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback'];
+const AUTH_PATHS = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/auth/callback'];
 
 const Layout = ({ children }) => {
     const { pathname } = useLocation();

@@ -3,7 +3,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import BlockIcon from '@mui/icons-material/Block';
-import { IconButton, Pagination, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { deleteReview, getReviews, updateReviewStatus } from '../../apis/review.api';
 import {
     InputField,
@@ -18,6 +18,7 @@ import { showApiError } from '../../components/ui/Toast/toastHelpers';
 import useDebounce from '../../utils/useDebounce';
 import formatStatusLabel from '../../utils/formatStatusLabel';
 import { REVIEW_STATUS_FILTER_OPTIONS, PAGE_SIZE } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 
 
@@ -32,7 +33,7 @@ const AdminReviews = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const debouncedSearch = useDebounce(search, 400);
     const isSearchPending = search !== debouncedSearch;
 
@@ -46,9 +47,11 @@ const AdminReviews = () => {
                 status: statusFilter || undefined,
             });
             setReviews(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch (err) {
             setReviews([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load reviews');
         } finally {
             setLoading(false);
@@ -104,11 +107,6 @@ const AdminReviews = () => {
     }, [confirm, fetchReviews, toast]);
 
     const columns = useMemo(() => [
-        {
-            key: 'serial',
-            label: 'S.N.',
-            render: (_row, index) => ((page - 1) * PAGE_SIZE) + index + 1,
-        },
         {
             key: 'productName',
             label: 'Product',
@@ -214,7 +212,7 @@ const AdminReviews = () => {
                 </div>
             ),
         },
-    ], [actionKey, handleDelete, handleStatusUpdate, page]);
+    ], [actionKey, handleDelete, handleStatusUpdate]);
 
     return (
         <div className="space-y-6">
@@ -249,19 +247,8 @@ const AdminReviews = () => {
                 data={reviews}
                 loading={loading || isSearchPending}
                 emptyMessage="No reviews found"
+                pagination={buildTablePagination(pagination, setPage)}
             />
-
-            {pagination.totalPages > 1 ? (
-                <div className="flex justify-center">
-                    <Pagination
-                        count={pagination.totalPages}
-                        page={page}
-                        onChange={(_event, value) => setPage(value)}
-                        color="primary"
-                        shape="rounded"
-                    />
-                </div>
-            ) : null}
         </div>
     );
 };

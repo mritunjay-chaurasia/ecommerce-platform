@@ -1,5 +1,8 @@
 const Joi = require('joi');
+const { createOptionalPaginationQuerySchema } = require('./common.schema');
 const { imagePathSchema } = require('./image.schema');
+
+const listProductsQuerySchema = createOptionalPaginationQuerySchema({ maxLimit: 50 });
 
 const baseProductSchema = {
     name: Joi.string().trim().min(2).max(120).required()
@@ -15,6 +18,7 @@ const baseProductSchema = {
         .messages({
             'string.empty': 'Category is required',
         }),
+    subcategory: Joi.string().trim().allow(null, ''),
     brand: Joi.string().trim().max(80).allow(''),
     sku: Joi.string().trim().min(2).max(60).required()
         .messages({
@@ -57,6 +61,7 @@ const updateProductSchema = Joi.object({
     name: Joi.string().trim().min(2).max(120),
     description: Joi.string().trim().max(2000).allow(''),
     category: Joi.string().trim(),
+    subcategory: Joi.string().trim().allow(null, ''),
     brand: Joi.string().trim().max(80).allow(''),
     sku: Joi.string().trim().min(2).max(60),
     price: Joi.number().min(0),
@@ -83,6 +88,7 @@ const updateProductSchema = Joi.object({
     });
 
 module.exports = {
+    listProductsQuerySchema,
     createProductSchema,
     updateProductSchema,
 };

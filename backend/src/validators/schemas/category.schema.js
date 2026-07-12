@@ -1,4 +1,10 @@
 const Joi = require('joi');
+const { createOptionalPaginationQuerySchema } = require('./common.schema');
+
+const listCategoriesQuerySchema = createOptionalPaginationQuerySchema({ maxLimit: 50 }).keys({
+    includeSubcategories: Joi.boolean(),
+    isActive: Joi.boolean(),
+});
 
 const createCategorySchema = Joi.object({
     name: Joi.string().trim().min(2).max(80).required()
@@ -20,6 +26,7 @@ const updateCategorySchema = Joi.object({
 }).min(1);
 
 module.exports = {
+    listCategoriesQuerySchema,
     createCategorySchema,
     updateCategorySchema,
 };

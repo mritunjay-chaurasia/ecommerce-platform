@@ -1,6 +1,7 @@
 const { Coupon } = require('../models/coupon.model');
 const { Order } = require('../models/order.model');
 const Product = require('../models/product.model');
+const ApiError = require('./ApiError');
 const { buildCheckoutSummary } = require('./checkout');
 const { ORDER_STATUS } = require('../../../shared/constants/order');
 
@@ -9,12 +10,20 @@ const placeOrder = async ({ body, user }) => {
     const couponCode = body.couponCode?.trim().toUpperCase();
     const shippingAddress = body.shippingAddress;
 
+    const customerEmail = user?.email || shippingAddress.email;
+
+    if (!customerEmail) {
+        throw new ApiError(400, 'Email is required for guest checkout');
+    }
+
     const order = await Order.create({
         customer: {
-            user: user._id,
-            name: `${user.firstName} ${user.lastName}`.trim(),
-            email: user.email,
-            phone: shippingAddress.phone || user.phone || '',
+            user: user?._id || null,
+            name: user
+                ? `${user.firstName} ${user.lastName}`.trim()
+                : shippingAddress.fullName.trim(),
+            email: customerEmail,
+            phone: shippingAddress.phone || user?.phone || '',
         },
         items: summary.items.map((item) => ({
             product: item.productId,

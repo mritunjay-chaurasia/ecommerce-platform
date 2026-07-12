@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
-import { IconButton, Pagination, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { getAdminReturnRequests, updateReturnRequestStatus } from '../../apis/return.api';
 import {
     InputField,
@@ -15,6 +15,7 @@ import { showApiError } from '../../components/ui/Toast/toastHelpers';
 import useDebounce from '../../utils/useDebounce';
 import formatStatusLabel from '../../utils/formatStatusLabel';
 import { PAGE_SIZE } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 const STATUS_OPTIONS = [
     { value: '', label: 'All statuses' },
@@ -32,7 +33,7 @@ const AdminReturns = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('pending');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const debouncedSearch = useDebounce(search, 400);
     const isSearchPending = search !== debouncedSearch;
 
@@ -46,9 +47,11 @@ const AdminReturns = () => {
                 status: statusFilter || undefined,
             });
             setReturns(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch (err) {
             setReturns([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load return requests');
         } finally {
             setLoading(false);
@@ -162,18 +165,8 @@ const AdminReturns = () => {
                 loading={loading}
                 rowKey="id"
                 emptyMessage="No return requests found"
+                pagination={buildTablePagination(pagination, setPage)}
             />
-
-            {pagination.totalPages > 1 ? (
-                <div className="mt-4 flex justify-center">
-                    <Pagination
-                        count={pagination.totalPages}
-                        page={page}
-                        onChange={(_, value) => setPage(value)}
-                        color="primary"
-                    />
-                </div>
-            ) : null}
         </div>
     );
 };

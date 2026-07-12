@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const router = Router();
 const {
+    getStoreCategories,
+    getStoreBrands,
     getStoreProduct,
     getStoreProducts,
     getCheckoutSummary,
@@ -17,6 +19,7 @@ const { createCustomerReview, getProductReviews, getMyProductReview } = require(
 const asyncHandler = require('../middlewares/asyncHandler');
 const authenticate = require('../middlewares/authenticate');
 const authorize = require('../middlewares/authorize');
+const optionalAuthenticate = require('../middlewares/optionalAuthenticate');
 const joiValidate = require('../middlewares/joiValidate');
 const {
     listStoreProductsQuerySchema,
@@ -28,6 +31,8 @@ const {
 const { listStoreBannersQuerySchema } = require('../validators/schemas/banner.schema');
 const { createReviewSchema, productIdParamsSchema, myReviewQuerySchema } = require('../validators/schemas/review.schema');
 
+router.get('/categories', asyncHandler(getStoreCategories));
+router.get('/brands', asyncHandler(getStoreBrands));
 router.get('/products', joiValidate(listStoreProductsQuerySchema, 'query'), asyncHandler(getStoreProducts));
 router.get('/products/:productId', joiValidate(productIdParamsSchema, 'params'), asyncHandler(getStoreProduct));
 router.get(
@@ -54,15 +59,13 @@ router.post(
 );
 router.post(
     '/checkout/summary',
-    authenticate,
-    authorize.customer,
+    optionalAuthenticate,
     joiValidate(checkoutSummarySchema),
     asyncHandler(getCheckoutSummary),
 );
 router.post(
     '/orders',
-    authenticate,
-    authorize.customer,
+    optionalAuthenticate,
     joiValidate(createStoreOrderSchema),
     asyncHandler(createStoreOrder),
 );

@@ -16,6 +16,7 @@ import {
 } from '../../components/ui';
 import { showApiError } from '../../components/ui/Toast/toastHelpers';
 import useDebounce from '../../utils/useDebounce';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 const PAGE_SIZE = 10;
 
@@ -44,7 +45,7 @@ const AdminInventory = () => {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [inventoryStatusFilter, setInventoryStatusFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [summary, setSummary] = useState({
         totalProducts: 0,
         inStockCount: 0,
@@ -76,10 +77,12 @@ const AdminInventory = () => {
             });
 
             setProducts(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
             setSummary(response.summary);
         } catch (err) {
             setProducts([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load inventory');
         } finally {
             setLoading(false);
@@ -88,8 +91,8 @@ const AdminInventory = () => {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const data = await getCategories();
-            setCategories(data);
+            const response = await getCategories();
+            setCategories(response.data);
         } catch (err) {
             showApiError(toast, err, 'Failed to load categories');
         }
@@ -184,11 +187,6 @@ const AdminInventory = () => {
     };
 
     const columns = useMemo(() => [
-        {
-            key: 'serialNumber',
-            label: 'S.N.',
-            render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
-        },
         { key: 'name', label: 'Product' },
         { key: 'sku', label: 'SKU' },
         {
@@ -247,7 +245,7 @@ const AdminInventory = () => {
                 </Tooltip>
             ),
         },
-    ], [page]);
+    ], [handleOpenModal]);
 
     return (
         <div className="w-full">
@@ -315,13 +313,7 @@ const AdminInventory = () => {
                 loading={loading}
                 rowKey="id"
                 emptyMessage="No inventory records found"
-                pagination={{
-                    page,
-                    totalPages: pagination.totalPages,
-                    totalItems: pagination.total,
-                    pageSize: PAGE_SIZE,
-                    onPageChange: setPage,
-                }}
+                pagination={buildTablePagination(pagination, setPage)}
             />
 
             <Modal

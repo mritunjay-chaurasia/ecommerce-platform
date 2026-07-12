@@ -9,6 +9,7 @@ const ProductForm = ({
     form,
     errors,
     categoryOptions,
+    subcategoryOptions = [],
     onChange,
     onImageItemsChange,
     onSubmit,
@@ -36,6 +37,17 @@ const ProductForm = ({
                 error={errors.category}
                 placeholder="Select a category"
                 required
+            />
+            <SelectField
+                label="Subcategory"
+                name="subcategory"
+                value={form.subcategory}
+                onChange={onChange}
+                options={subcategoryOptions}
+                error={errors.subcategory}
+                placeholder={form.category ? 'Select a subcategory' : 'Select category first'}
+                disabled={!form.category || subcategoryOptions.length === 0}
+                required={subcategoryOptions.length > 0}
             />
             <InputField
                 label="Brand"

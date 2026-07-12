@@ -26,7 +26,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background: var(--store-surface-subtle);
     transition: transform 0.3s ease;
+}
+
+.product-card-image.product-image-placeholder {
+    object-fit: contain;
+    padding: 1.25rem;
 }
 
 .product-card:hover .product-card-image {

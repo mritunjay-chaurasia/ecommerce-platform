@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signup as signupApi } from '../apis/user.api';
 import { useAppDispatch } from '../store/hooks';
 import { loginSuccess } from '../store/slices/authSlice';
+import { markCartMergePending } from '../utils/cartMerge';
 import {
     InputField,
     PasswordField,
@@ -98,6 +99,7 @@ const Signup = () => {
         try {
             const { confirmPassword, ...signupPayload } = form;
             const userData = await signupApi(signupPayload);
+            markCartMergePending();
             dispatch(loginSuccess(userData));
             showToastMessage(toast, 'Account created successfully. Welcome!', 'success');
             navigate('/');

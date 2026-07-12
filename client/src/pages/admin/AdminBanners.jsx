@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { IconButton, Pagination, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import {
     createBanner,
     deleteBanner,
@@ -30,6 +30,7 @@ import {
 import useDebounce from '../../utils/useDebounce';
 import formatStatusLabel from '../../utils/formatStatusLabel';
 import { BANNER_STATUS_FILTER_OPTIONS, PLACEMENT_OPTIONS, PAGE_SIZE } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 
 
 const emptyForm = {
@@ -75,7 +76,7 @@ const AdminBanners = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [placementFilter, setPlacementFilter] = useState('');
     const [page, setPage] = useState(1);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const [form, setForm] = useState(emptyForm);
     const [errors, setErrors] = useState({});
     const debouncedSearch = useDebounce(search, 400);
@@ -93,9 +94,11 @@ const AdminBanners = () => {
             });
 
             setBanners(response.data);
-            setPagination(response.pagination);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch (err) {
             setBanners([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showApiError(toast, err, 'Failed to load banners');
         } finally {
             setLoading(false);
@@ -237,11 +240,6 @@ const AdminBanners = () => {
 
     const columns = useMemo(() => [
         {
-            key: 'serial',
-            label: 'S.N.',
-            render: (_row, index) => ((page - 1) * PAGE_SIZE) + index + 1,
-        },
-        {
             key: 'title',
             label: 'Title',
             render: (row) => (
@@ -288,7 +286,7 @@ const AdminBanners = () => {
                 </div>
             ),
         },
-    ], [handleDelete, handleEdit, page]);
+    ], [handleDelete, handleEdit]);
 
     return (
         <div className="space-y-6">
@@ -334,19 +332,8 @@ const AdminBanners = () => {
                 data={banners}
                 loading={loading || isSearchPending}
                 emptyMessage="No banners found"
+                pagination={buildTablePagination(pagination, setPage)}
             />
-
-            {pagination.totalPages > 1 ? (
-                <div className="flex justify-center">
-                    <Pagination
-                        count={pagination.totalPages}
-                        page={page}
-                        onChange={(_event, value) => setPage(value)}
-                        color="primary"
-                        shape="rounded"
-                    />
-                </div>
-            ) : null}
 
             <Modal
                 open={isModalOpen}

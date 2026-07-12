@@ -8,12 +8,38 @@ const issueAuthTokens = require('../utils/issueAuthTokens');
 const formatUserResponse = require('../utils/formatUserResponse');
 const escapeRegex = require('../utils/escapeRegex');
 const { sendEmailSafe } = require('../utils/sendEmail');
-const { buildPasswordResetEmail } = require('../templates/emailTemplates');
+const { buildPasswordResetEmail, buildEmailVerificationEmail } = require('../templates/emailTemplates');
 const { getStoreSettings } = require('../utils/storeSettings');
 const { ROLES } = require('../constants/roles');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
 
 const ACCOUNT_EXISTS = 'An account with this email or phone already exists';
 const BCRYPT_ROUNDS = 12;
+const EMAIL_VERIFICATION_EXPIRY_MS = Number(process.env.EMAIL_VERIFICATION_EXPIRY_MS || 86400000);
+
+const sendEmailVerificationMessage = async (user) => {
+    const { token, hashedToken } = generateResetToken();
+
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY_MS);
+    await user.save({ validateBeforeSave: false });
+
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    const expiryHours = Math.max(1, Math.round(EMAIL_VERIFICATION_EXPIRY_MS / 3600000));
+    const settings = await getStoreSettings();
+    const verificationEmail = await buildEmailVerificationEmail({
+        storeName: settings.storeName,
+        customerName: user.firstName || 'there',
+        verifyUrl,
+        expiryHours,
+    });
+
+    sendEmailSafe({
+        to: user.email,
+        subject: verificationEmail.subject,
+        html: verificationEmail.html,
+    });
+};
 
 const signup = async (req, res) => {
     const { firstName, lastName, email, password, phone, gender } = req.body;
@@ -41,9 +67,11 @@ const signup = async (req, res) => {
 
     await issueAuthTokens(res, user);
 
+    sendEmailVerificationMessage(user).catch(() => {});
+
     return res.status(201).json({
         success: true,
-        message: 'Account created successfully',
+        message: 'Account created successfully. Please verify your email.',
         data: formatUserResponse(user),
     });
 };
@@ -189,10 +217,19 @@ const formatAdminUserRow = (user, now = new Date()) => ({
     createdAt: user.createdAt,
 });
 
+const formatAdminUserDetail = (user, now = new Date()) => ({
+    ...formatAdminUserRow(user, now),
+    firstName: user.firstName,
+    lastName: user.lastName,
+    gender: user.gender || null,
+    authProvider: user.authProvider || 'local',
+    avatar: user.avatar || null,
+    lastLoginAt: user.lastLoginAt || null,
+    updatedAt: user.updatedAt,
+});
+
 const getUsers = async (req, res) => {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const search = req.query.search?.trim();
     const filter = {
         accountStatus: { $ne: 'deleted' },
@@ -225,12 +262,25 @@ const getUsers = async (req, res) => {
     return res.status(200).json({
         success: true,
         data,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        pagination: buildPagination(page, limit, total),
+    });
+};
+
+const getUserById = async (req, res) => {
+    const { id } = req.params;
+
+    const user = await User.findById(id)
+        .select('+refreshTokenExpires firstName lastName email phone gender role accountStatus isActive isEmailVerified isPhoneVerified authProvider avatar lastLoginAt createdAt updatedAt');
+
+    console.log(">>>>>user", user);
+
+    if (!user || user.accountStatus === 'deleted') {
+        throw new ApiError(404, 'User not found');
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: formatAdminUserDetail(user),
     });
 };
 
@@ -407,6 +457,85 @@ const changePassword = async (req, res) => {
     });
 };
 
+const verifyEmail = async (req, res) => {
+    const token = req.query.token?.trim();
+
+    if (!token) {
+        throw new ApiError(400, 'Verification token is required');
+    }
+
+    const hashedToken = hashResetToken(token);
+    const user = await User.findOne({
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: { $gt: new Date() },
+    }).select('+emailVerificationToken +emailVerificationExpires');
+
+    if (!user) {
+        throw new ApiError(400, 'Verification link is invalid or has expired');
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json({
+        success: true,
+        message: 'Email verified successfully',
+    });
+};
+
+const resendVerificationEmail = async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    if (user.isEmailVerified) {
+        return res.status(200).json({
+            success: true,
+            message: 'Email is already verified',
+        });
+    }
+
+    await sendEmailVerificationMessage(user);
+
+    return res.status(200).json({
+        success: true,
+        message: 'Verification email sent',
+    });
+};
+
+const updateUserRole = async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (String(id) === String(req.user._id)) {
+        throw new ApiError(400, 'You cannot change your own role');
+    }
+
+    const user = await User.findById(id).select('+refreshTokenExpires');
+
+    if (!user || user.accountStatus === 'deleted') {
+        throw new ApiError(404, 'User not found');
+    }
+
+    if (user.role === ROLES.ADMIN && role !== ROLES.ADMIN) {
+        throw new ApiError(400, 'Admin role cannot be changed from this screen');
+    }
+
+    user.role = role;
+    await user.save();
+    await invalidateUserSessions(user._id);
+
+    return res.status(200).json({
+        success: true,
+        message: 'User role updated successfully',
+        data: formatAdminUserRow(user),
+    });
+};
+
 module.exports = {
     signup,
     login,
@@ -416,8 +545,12 @@ module.exports = {
     updateProfile,
     changePassword,
     getUsers,
+    getUserById,
     updateUserStatus,
     updateUserVerification,
+    updateUserRole,
+    verifyEmail,
+    resendVerificationEmail,
     forgotPassword,
     resetPassword,
 };

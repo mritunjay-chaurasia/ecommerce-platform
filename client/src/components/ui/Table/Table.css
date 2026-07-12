@@ -1,47 +1,54 @@
-.virtualized-data-table .ReactVirtualized__Table__headerRow {
-    background: rgb(248 250 252);
-    border-bottom: 1px solid rgb(226 232 240);
-    font-weight: 600;
-    color: rgb(71 85 105);
-    text-transform: none;
+.data-table-wrapper {
+    background: #fff;
 }
 
-.dark .virtualized-data-table .ReactVirtualized__Table__headerRow {
+.dark .data-table-wrapper {
     background: rgb(15 23 42);
-    border-bottom-color: rgb(51 65 85);
+    border-color: rgb(51 65 85);
+}
+
+.data-table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    min-width: 720px;
+}
+
+.data-table .MuiTableCell-root {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    padding: 0.875rem 1rem;
+    word-break: break-word;
+}
+
+.data-table .MuiTableCell-head {
+    font-size: 0.875rem;
+}
+
+.dark .data-table .MuiTableCell-head {
+    background: rgb(15 23 42);
     color: rgb(203 213 225);
 }
 
-.virtualized-data-table .ReactVirtualized__Table__row {
-    border-bottom: 1px solid rgb(226 232 240);
-    color: rgb(30 41 59);
-}
-
-.dark .virtualized-data-table .ReactVirtualized__Table__row {
-    border-bottom-color: rgb(51 65 85);
+.dark .data-table .MuiTableCell-body {
     color: rgb(226 232 240);
+    border-bottom-color: rgb(51 65 85);
 }
 
-.virtualized-data-table .ReactVirtualized__Table__row:hover {
-    background: rgb(248 250 252);
+.data-table__cell--nowrap {
+    white-space: nowrap;
 }
 
-.dark .virtualized-data-table .ReactVirtualized__Table__row:hover {
-    background: rgb(30 41 59);
+.data-table__cell--truncate {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.virtualized-data-table .ReactVirtualized__Table__headerColumn,
-.virtualized-data-table .ReactVirtualized__Table__rowColumn {
-    padding: 0 12px;
-    display: flex;
-    align-items: center;
-}
-
-.virtualized-data-table .ReactVirtualized__Grid {
-    outline: none;
-}
-
-.virtualized-data-table .ReactVirtualized__Table__headerColumn:first-of-type,
-.virtualized-data-table .ReactVirtualized__Table__rowColumn:first-of-type {
-    margin-left: 0;
+.data-table__cell--description {
+    min-width: 12rem;
+    max-width: 28rem;
 }

@@ -2,6 +2,7 @@ const { Coupon } = require('../models/coupon.model');
 const ApiError = require('../utils/ApiError');
 const escapeRegex = require('../utils/escapeRegex');
 const { validateCouponBusinessRules, getCouponStatus } = require('../utils/coupon');
+const { buildPagination, parsePaginationQuery } = require('../utils/pagination');
 
 const normalizeCouponPayload = (payload = {}) => ({
     ...payload,
@@ -28,8 +29,7 @@ const formatCoupon = (coupon, now = new Date()) => ({
 });
 
 const getCoupons = async (req, res) => {
-    const page = req.query.page;
-    const limit = req.query.limit;
+    const { page, limit, skip } = parsePaginationQuery(req.query);
     const search = req.query.search?.trim();
     const statusFilter = req.query.status?.trim();
 
@@ -54,18 +54,12 @@ const getCoupons = async (req, res) => {
         : formattedCoupons;
 
     const total = filteredCoupons.length;
-    const skip = (page - 1) * limit;
     const data = filteredCoupons.slice(skip, skip + limit);
 
     return res.status(200).json({
         success: true,
         data,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-        },
+        pagination: buildPagination(page, limit, total),
     });
 };
 

@@ -15,6 +15,7 @@ import {
     FiGrid,
     FiLogOut,
     FiHeart,
+    FiRefreshCw,
 } from 'react-icons/fi';
 
 const iconMap = {
@@ -34,6 +35,7 @@ const iconMap = {
     Grid: FiGrid,
     LogOut: FiLogOut,
     Heart: FiHeart,
+    RotateCcw: FiRefreshCw,
 };
 
 export default iconMap;

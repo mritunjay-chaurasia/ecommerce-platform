@@ -6,7 +6,7 @@ import { useStoreSettings } from '../../context/StoreSettingsProvider';
 import { useAppDispatch } from '../../store/hooks';
 import { Button, showToastMessage, useToast } from '../ui';
 import formatCurrency from '../../utils/formatCurrency';
-import { getImageUrl } from '../../utils/imageUrl';
+import ProductImage from './ProductImage';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
@@ -36,7 +36,11 @@ const ProductCard = ({ product }) => {
             <Link to={`/products/${product.id}`} className="product-card-link">
                 <div className="product-card-image-wrap">
                     <WishlistButton product={product} />
-                    <img src={getImageUrl(product.imageUrl || product.image)} alt={product.name || product.title} className="product-card-image" />
+                    <ProductImage
+                        src={product.imageUrl || product.image}
+                        alt={product.name || product.title}
+                        className="product-card-image"
+                    />
                     {discount > 0 && (
                         <span className="product-card-discount">{discount}% off</span>
                     )}

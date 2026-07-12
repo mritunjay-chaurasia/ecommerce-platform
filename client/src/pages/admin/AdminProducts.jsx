@@ -7,6 +7,7 @@ import {
     createProduct,
     updateProduct,
     deleteProduct,
+    getExportProductsUrl,
 } from '../../apis/product.api';
 import { getCategories } from '../../apis/category.api';
 import {
@@ -24,6 +25,8 @@ import { showApiError } from '../../components/ui/Toast/toastHelpers';
 import { useStoreSettings } from '../../context/StoreSettingsProvider';
 import formatCurrency from '../../utils/formatCurrency';
 import useDebounce from '../../utils/useDebounce';
+import { PAGE_SIZE } from '../../constants/index';
+import { applyPaginationResponse, buildTablePagination, DEFAULT_PAGINATION } from '../../utils/pagination';
 import {
     createExistingImageItem,
     resolveImageItems,
@@ -34,6 +37,7 @@ const emptyForm = {
     name: '',
     description: '',
     category: '',
+    subcategory: '',
     brand: '',
     sku: '',
     price: '',
@@ -56,7 +60,10 @@ const AdminProducts = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [search, setSearch] = useState('');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
     const debouncedSearch = useDebounce(search, 300);
+    const isSearchPending = search !== debouncedSearch;
     const [editingId, setEditingId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form, setForm] = useState(emptyForm);
@@ -67,40 +74,79 @@ const AdminProducts = () => {
         label: category.name,
     })), [categories]);
 
+    const subcategoryOptions = useMemo(() => {
+        const selectedCategory = categories.find((category) => category.id === form.category);
+        return (selectedCategory?.subcategories || []).map((subcategory) => ({
+            value: subcategory.id,
+            label: subcategory.name,
+        }));
+    }, [categories, form.category]);
+
     const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getProducts({
+            const response = await getProducts({
+                page,
+                limit: PAGE_SIZE,
                 search: debouncedSearch.trim() || undefined,
             });
-            setProducts(data);
+            setProducts(Array.isArray(response.data) ? response.data : []);
+            applyPaginationResponse(response, setPagination, setPage);
         } catch {
+            setProducts([]);
+            setPagination(DEFAULT_PAGINATION);
+            setPage(DEFAULT_PAGINATION.page);
             showToastMessage(toast, 'Failed to load products', 'error');
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, toast]);
+    }, [debouncedSearch, page, toast]);
 
     const fetchCategories = useCallback(async () => {
         try {
-            const data = await getCategories();
-            setCategories(data);
+            const response = await getCategories({
+                includeSubcategories: true,
+            });
+            setCategories(Array.isArray(response.data) ? response.data : []);
         } catch {
             showToastMessage(toast, 'Failed to load categories', 'error');
         }
     }, [toast]);
 
     useEffect(() => {
+        if (isSearchPending) {
+            return;
+        }
+
         fetchProducts();
+    }, [fetchProducts, isSearchPending]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
+
+    useEffect(() => {
         fetchCategories();
-    }, [fetchProducts, fetchCategories]);
+    }, [fetchCategories]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
+        setForm((prev) => {
+            const nextValue = type === 'checkbox' ? checked : value;
+
+            if (name === 'category') {
+                return {
+                    ...prev,
+                    category: nextValue,
+                    subcategory: '',
+                };
+            }
+
+            return {
+                ...prev,
+                [name]: nextValue,
+            };
+        });
         setErrors((prev) => ({ ...prev, [name]: '' }));
     };
 
@@ -123,6 +169,10 @@ const AdminProducts = () => {
 
         if (!form.category) {
             validationErrors.category = 'Category is required';
+        }
+
+        if (subcategoryOptions.length > 0 && !form.subcategory) {
+            validationErrors.subcategory = 'Subcategory is required';
         }
 
         if (!form.sku.trim()) {
@@ -180,6 +230,7 @@ const AdminProducts = () => {
         name: form.name.trim(),
         description: form.description.trim(),
         category: form.category,
+        subcategory: form.subcategory || null,
         brand: form.brand.trim(),
         sku: form.sku.trim(),
         price: Number(form.price),
@@ -231,6 +282,7 @@ const AdminProducts = () => {
             name: product.name,
             description: product.description || '',
             category: product.category || '',
+            subcategory: product.subcategory || '',
             brand: product.brand || '',
             sku: product.sku || '',
             price: product.price ?? '',
@@ -242,6 +294,10 @@ const AdminProducts = () => {
         });
         setErrors({});
         setIsModalOpen(true);
+    };
+
+    const handleExportCsv = () => {
+        window.open(getExportProductsUrl(), '_blank', 'noopener,noreferrer');
     };
 
     const handleDelete = async (product) => {
@@ -270,13 +326,13 @@ const AdminProducts = () => {
     };
 
     const columns = [
-        {
-            key: 'serialNumber',
-            label: 'S.N.',
-            render: (row, index) => index + 1,
-        },
         { key: 'name', label: 'Name' },
         { key: 'categoryName', label: 'Category', render: (row) => row.categoryName || '-' },
+        {
+            key: 'subcategoryName',
+            label: 'Subcategory',
+            render: (row) => row.subcategoryName || '-',
+        },
         { key: 'sku', label: 'SKU' },
         {
             key: 'price',
@@ -356,9 +412,14 @@ const AdminProducts = () => {
                     <h1 className="text-xl font-bold text-slate-800 sm:text-2xl">Manage Products</h1>
                     <p className="mt-1 text-sm text-slate-500">Add, update, or remove products from the catalog</p>
                 </div>
-                <Button type="button" onClick={handleOpenCreateModal} className="w-full sm:w-auto">
-                    Add Product
-                </Button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                    <Button type="button" variant="outline" onClick={handleExportCsv} className="w-full sm:w-auto">
+                        Export CSV
+                    </Button>
+                    <Button type="button" onClick={handleOpenCreateModal} className="w-full sm:w-auto">
+                        Add Product
+                    </Button>
+                </div>
             </div>
 
             <div className="admin-search mb-4">
@@ -374,9 +435,10 @@ const AdminProducts = () => {
             <Table
                 columns={columns}
                 data={products}
-                loading={loading}
+                loading={loading || isSearchPending}
                 rowKey="id"
                 emptyMessage="No products found"
+                pagination={buildTablePagination(pagination, setPage)}
             />
             <Modal
                 open={isModalOpen}
@@ -390,6 +452,7 @@ const AdminProducts = () => {
                     form={form}
                     errors={errors}
                     categoryOptions={categoryOptions}
+                    subcategoryOptions={subcategoryOptions}
                     onChange={handleChange}
                     onImageItemsChange={handleImageItemsChange}
                     onSubmit={handleSubmit}

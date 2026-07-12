@@ -40,6 +40,31 @@ export const formatValidationErrors = (errors) => {
     return messages.join(' • ');
 };
 
+export const mapFieldErrorsFromApi = (error, fieldMap = {}) => {
+    const apiErrors = error?.response?.data?.errors;
+
+    if (Array.isArray(apiErrors) && apiErrors.length > 0) {
+        return apiErrors.reduce((accumulator, entry) => {
+            const field = fieldMap[entry.field] || entry.field;
+            accumulator[field] = entry.message;
+            return accumulator;
+        }, {});
+    }
+
+    const message = getApiErrorMessage(error, '');
+    const fieldErrors = {};
+
+    if (/category name already exists/i.test(message)) {
+        fieldErrors.name = message;
+    } else if (/subcategory name already exists/i.test(message)) {
+        fieldErrors.name = message;
+    } else if (/description cannot exceed/i.test(message)) {
+        fieldErrors.description = message;
+    }
+
+    return fieldErrors;
+};
+
 export const showFormValidationToast = (toast, errors) => {
     showToastMessage(toast, formatValidationErrors(errors), 'warning');
 };
